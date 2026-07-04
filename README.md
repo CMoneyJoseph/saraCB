@@ -1,6 +1,7 @@
 # SARA CB 策略雷達（WEB 原型）
 
 **線上預覽：https://cmoneyjoseph.github.io/saraCB/**
+**策略邏輯與使用說明：https://cmoneyjoseph.github.io/saraCB/guide.html**（站內「操作說明」按鈕會開啟快速導覽，首次進站自動顯示）
 
 SARA 的可轉債交易 WEB 工具原型。核心概念：**現股給訊號，CB 下單**——現股心動、型態到位時，改用可轉債進場（上有跟漲、下有債底）；小資金想放大，用 CBAS 槓桿。
 
