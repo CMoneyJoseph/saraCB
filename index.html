@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SARA 看CB玩現股 · 原型</title>
+<title>SARA CB策略雷達 · 原型</title>
 <style>
   :root{
     --bg:#171221; --panel:#211A2E; --panel2:#2A2239; --line:#382E4C;
@@ -46,7 +46,7 @@
 
   /* ── table (desktop) ── */
   .tblbox{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); overflow-x:auto}
-  table{width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; min-width:880px}
+  table{width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; min-width:900px}
   th{font-size:12px; font-weight:600; color:var(--mute); text-align:right; padding:10px 12px;
     border-bottom:1px solid var(--line); letter-spacing:.04em; white-space:nowrap; cursor:pointer; user-select:none}
   th:first-child{text-align:left}
@@ -62,6 +62,8 @@
   .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--mute)}
   .fire{display:inline-block; font-size:11px; padding:1px 8px; border-radius:999px;
     background:var(--gold-soft); color:var(--gold); font-weight:600}
+  .safe{display:inline-block; font-size:11px; padding:1px 8px; border-radius:999px;
+    background:#1D3229; color:var(--down); font-weight:600}
   .pat{display:inline-block; font-size:11px; padding:1px 8px; border-radius:999px;
     border:1px solid var(--line); color:var(--mute)}
   .heart{display:inline-block; min-width:34px; text-align:center; font-size:12px; font-weight:700;
@@ -117,6 +119,11 @@
   .gauge .lbl{position:absolute; top:-6px; font-size:10px; color:var(--faint); transform:translateX(-50%)}
   .gaugebox .verdict{font-size:13.5px; margin-top:6px}
   .gaugebox .verdict b{color:var(--gold)}
+  .calc{background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-top:6px}
+  .calc .row{display:flex; justify-content:space-between; font-size:13.5px; padding:3px 0; font-variant-numeric:tabular-nums}
+  .calc .row b{font-weight:600; color:var(--gold)}
+  .calc label{display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--mute); margin-bottom:8px}
+  .calc input[type=range]{flex:1; accent-color:var(--gold)}
   .note{font-size:11.5px; color:var(--faint); margin-top:8px}
 
   /* ── footer ── */
@@ -135,10 +142,10 @@
 <div class="wrap">
   <header>
     <span class="brand">SARA</span>
-    <h1>看CB玩現股</h1>
-    <span class="databadge">資料日 <b>2026/07/02–03</b> 盤後 · WEB 原型 v0.2</span>
+    <h1>CB 策略雷達</h1>
+    <span class="databadge">資料日 <b>2026/07/02–03</b> 盤後 · WEB 原型 v0.3</span>
   </header>
-  <p class="tagline"><b>CB 是訊號，現股才是主角</b>——股債乖離收斂進 ±3%，多半代表短線上現股即將或正在發動。點任一檔看發動判讀與現股型態。</p>
+  <p class="tagline"><b>現股給訊號，CB 下單</b>——現股心動、型態到位時，改用可轉債進場：上有跟漲、下有債底；小資金想放大，用 CBAS 槓桿。點任一檔看 CB 進場判讀與 CBAS 試算。</p>
 
   <nav id="chips" role="tablist" aria-label="策略切換"></nav>
   <div class="stratdesc" id="stratdesc"></div>
@@ -152,16 +159,16 @@
   <div class="cards" id="cards"></div>
 
   <footer>
-    <b>原型資料說明</b>：行情、轉換價、股債乖離為 2026/07/02–03 真實盤後樣本（內部資料庫）；
+    <b>原型資料說明</b>：CB／現股行情、轉換價、股債乖離、賣回條件為 2026/07/02–03 真實盤後樣本（內部資料庫）；
     未轉換比率、心動指標、現股型態標籤為示意值，僅供架構與互動過稿，勿作投資參考。<br>
     <b>計算定義</b>：轉換價值 = 100 ÷ 轉換價 × 股價；股債乖離率 = (CB價 − 轉換價值) ÷ 轉換價值；
-    心動指標為 −10～10 分級（&lt;0 藍綠、0–3 白、4–6 淺橘、7–10 橘紅，優先關注大橘）。<br>
-    策略門檻沿 SARA 現行設定：乖離 ≤10%、未轉換 ≥80%、CB ≥100，發動區 ±3%，皆可再調參。
+    賣回報酬率 = (賣回價 − CB價) ÷ CB價；CBAS 權利金 =（CB − 100）＋ 百元報價（折現率預設 1.5%、手續費 0.3%，明細內可調）。<br>
+    心動指標為 −10～10 分級（&lt;0 藍綠、0–3 白、4–6 淺橘、7–10 橘紅，優先關注大橘）；各策略門檻皆可再調參。
   </footer>
 </div>
 
 <div class="scrim" id="scrim"></div>
-<aside class="drawer" id="drawer" aria-label="個股明細"></aside>
+<aside class="drawer" id="drawer" aria-label="可轉債明細"></aside>
 
 <script>
 /* ── 資料：真實盤後樣本 + 示意補欄 ── */
@@ -189,25 +196,44 @@ const ROWS = [
  ["49231","力士一","4923","力士",61.5,34.66,170,7,60,"2027/01/29",100.0,"無",84,5,null],
 ].map(r=>{
   const [code,name,stkCode,stk,stkPx,convPx,cbPx,vol,newHigh,putDate,putPx,guar,unconv,heart,pattern]=r;
-  const convVal = 100/convPx*stkPx;                 // 轉換價值（理論價）
+  const convVal = 100/convPx*stkPx;                 // 轉換價值
   const dev = (cbPx-convVal)/convVal*100;           // 股債乖離率
-  return {code,name,stkCode,stk,stkPx,convPx,cbPx,vol,newHigh,putDate,putPx,guar,unconv,heart,pattern,convVal,dev};
+  let putRet=null, yrsToPut=null;
+  if(putDate&&putPx){
+    const d=new Date(putDate);
+    yrsToPut=Math.max(0,(d-TODAY)/31557600000);
+    putRet=(putPx-cbPx)/cbPx*100;                   // 賣回報酬率
+  }
+  return {code,name,stkCode,stk,stkPx,convPx,cbPx,vol,newHigh,putDate,putPx,guar,unconv,heart,pattern,convVal,dev,putRet,yrsToPut};
 });
 
-/* ── SARA 策略：同一份資料，不同濾網 ── */
+/* CBAS：百元報價 = 折現率×剩餘年 −(賣回價−100)+手續費；權利金 = (CB−100)+百元報價 */
+function cbas(row, discount=1.5, fee=0.3){
+  if(row.yrsToPut==null) return null;
+  const par100 = discount*row.yrsToPut - (row.putPx-100) + fee;
+  const premium = (row.cbPx-100) + par100;
+  const lev = premium>0.5 ? row.convVal/premium : null;
+  return {par100, premium, lev};
+}
+
+/* ── 策略：全部以「買CB / 操作CB」為出口 ── */
 const STRATS = [
- {id:"cbstock", label:"看CB玩現股", cols:"sara",
-  desc:"<span class='cond'>股債乖離率 ≤10% ＋ 未轉換比率 ≥80% ＋ CB收盤 ≥100</span>——籌碼還在債裡、股債貼近，現股蓄勢。乖離進 ±3% 標「發動」。",
-  filter:r=>Math.abs(r.dev)<=10 && r.unconv>=80 && r.cbPx>=100,
-  sort:(a,b)=>Math.abs(a.dev)-Math.abs(b.dev)},
+ {id:"heartcb", label:"心動CB", cols:"sara",
+  desc:"<span class='cond'>現股心動 ≥4（淺橘以上）或型態到位 ＋ 股債乖離 ≤10% ＋ CB 有成交</span>——現股有戲，但單改下在 CB：上有跟漲、下有債底。",
+  filter:r=>(r.heart>=4 || r.pattern) && Math.abs(r.dev)<=10 && r.vol>0,
+  sort:(a,b)=>b.heart-a.heart},
  {id:"fire", label:"發動雷達", cols:"sara",
-  desc:"<span class='cond'>股債乖離率進入 ±3%</span>——股債轉換貼到正負3%，多半代表短線上現股即將或正在發動，優先看大橘。",
+  desc:"<span class='cond'>股債乖離進 ±3%</span>——CB 與現股幾乎 1:1 連動，現股發動 CB 直接跟漲，此時買 CB 等於買現股＋債底保險。",
   filter:r=>Math.abs(r.dev)<=3,
   sort:(a,b)=>b.heart-a.heart},
- {id:"pattern", label:"型態共振", cols:"sara",
-  desc:"<span class='cond'>現股符合 SARA 型態（N字勾／小碎步／有底撐／穿心箭）＋ 股債乖離 ≤10%</span>——CB 訊號與現股型態同時到位。",
-  filter:r=>r.pattern && Math.abs(r.dev)<=10,
-  sort:(a,b)=>b.heart-a.heart},
+ {id:"floor", label:"債底安全網", cols:"floor",
+  desc:"<span class='cond'>CB 收盤 ≤105 ＋ 賣回報酬率 ≥0</span>——價位貼近債底，抱到賣回日穩拿保底報酬；現股若發動就跟著漲，進可攻退可守。",
+  filter:r=>r.cbPx<=105 && r.putRet!=null && r.putRet>=0,
+  sort:(a,b)=>b.putRet-a.putRet},
+ {id:"cbas", label:"CBAS槓桿", cols:"cbas",
+  desc:"<span class='cond'>CBAS 權利金 ＜20 ＋ 槓桿 ＞5 倍</span>——用小額權利金撬動整檔 CB，現股心動越高越值得用槓桿放大。",
+  filter:r=>{const c=cbas(r); return c && c.premium<20 && c.lev && c.lev>5},
+  sort:(a,b)=>cbas(b).lev-cbas(a).lev},
  {id:"all", label:"全部總覽", cols:"full",
   desc:"可轉債完整清單，點欄位標題可排序。",
   filter:()=>true, sort:(a,b)=>a.code.localeCompare(b.code)},
@@ -222,17 +248,21 @@ const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const heartCls = h => h>=7?"h-hot":h>=4?"h-warm":h>=0?"h-mid":"h-cool";
 const heartChip = h => `<span class="heart ${heartCls(h)}">${h>0?"+":""}${h}</span>`;
 const devCell = r => `<span class="${cls(r.dev)}">${fmt(r.dev)}%</span>${Math.abs(r.dev)<=3?` <span class="fire">發動</span>`:""}`;
+const putCell = r => r.putRet==null ? "－" :
+  `<span class="${cls(r.putRet)}">${fmt(r.putRet)}%</span>${r.putRet>=0&&r.cbPx<=105?` <span class="safe">有底</span>`:""}`;
 
 const COLSETS = {
-  sara:[["name","現股 / CB"],["stkPx","股價"],["cbPx","CB收盤"],["convPx","轉換價"],["dev","股債乖離率"],["unconv","未轉換%"],["heart","心動"],["pattern","型態"]],
-  full:[["name","現股 / CB"],["stkPx","股價"],["cbPx","CB收盤"],["convPx","轉換價"],["convVal","轉換價值"],["dev","股債乖離率"],["vol","成交張"],["unconv","未轉換%"],["heart","心動"],["guar","擔保"]],
+  sara:[["name","CB / 現股"],["cbPx","CB收盤"],["stkPx","股價"],["dev","股債乖離率"],["heart","心動"],["pattern","型態"],["unconv","未轉換%"],["vol","成交張"]],
+  floor:[["name","CB / 現股"],["cbPx","CB收盤"],["putPx","賣回價"],["putRet","賣回報酬率"],["putDate","賣回日"],["dev","股債乖離率"],["heart","心動"],["vol","成交張"]],
+  cbas:[["name","CB / 現股"],["cbPx","CB收盤"],["cbasPrem","所需權利金"],["cbasLev","槓桿倍數"],["dev","股債乖離率"],["heart","心動"],["pattern","型態"],["vol","成交張"]],
+  full:[["name","CB / 現股"],["cbPx","CB收盤"],["stkPx","股價"],["convPx","轉換價"],["convVal","轉換價值"],["dev","股債乖離率"],["putRet","賣回報酬率"],["heart","心動"],["vol","成交張"],["guar","擔保"]],
 };
 function cellHtml(r,k){
   switch(k){
-    case "name": return `<span class="nm">${esc(r.stk)}</span><span class="cd">${r.stkCode}</span><br>
-      <span class="stk">${esc(r.name)} ${r.code}${r.pattern&&cur.cols==="full"?` <span class="pat">${r.pattern}</span>`:""}</span>`;
-    case "stkPx": return fmt(r.stkPx, r.stkPx>500?0:2);
+    case "name": return `<span class="nm">${esc(r.name)}</span><span class="cd">${r.code}</span><br>
+      <span class="stk">${esc(r.stk)} ${r.stkCode}${r.pattern?` <span class="pat">${r.pattern}</span>`:""}</span>`;
     case "cbPx": return fmt(r.cbPx,1);
+    case "stkPx": return fmt(r.stkPx, r.stkPx>500?0:2);
     case "convPx": return fmt(r.convPx,1);
     case "convVal": return fmt(r.convVal);
     case "dev": return devCell(r);
@@ -241,13 +271,23 @@ function cellHtml(r,k){
     case "heart": return heartChip(r.heart);
     case "pattern": return r.pattern?`<span class="pat">${r.pattern}</span>`:"－";
     case "guar": return `<span class="stk">${r.guar==="有"?"有":"－"}</span>`;
+    case "putPx": return fmt(r.putPx);
+    case "putRet": return putCell(r);
+    case "putDate": return `<span class="stk">${r.putDate??"－"}</span>`;
+    case "cbasPrem": {const c=cbas(r); return c?`<b>${fmt(c.premium)}</b>`:"－";}
+    case "cbasLev": {const c=cbas(r); return c&&c.lev?fmt(c.lev,1)+" 倍":"－";}
   }
+}
+function sortVal(r,k){
+  if(k==="cbasPrem"){const c=cbas(r); return c?c.premium:null}
+  if(k==="cbasLev"){const c=cbas(r); return c?c.lev:null}
+  return r[k];
 }
 function rows(){
   let list = ROWS.filter(cur.filter);
   if(sortKey){
     list=[...list].sort((a,b)=>{
-      const av=a[sortKey], bv=b[sortKey];
+      const av=sortVal(a,sortKey), bv=sortVal(b,sortKey);
       if(typeof av==="string"||typeof bv==="string") return sortDir*String(av??"").localeCompare(String(bv??""));
       return sortDir*(((av??-1e9))-((bv??-1e9)));
     });
@@ -266,16 +306,16 @@ function render(){
     `<th onclick="sortBy('${k}')">${t}${sortKey===k?`<span class="arr"> ${sortDir>0?"▲":"▼"}</span>`:""}</th>`).join("")+"</tr>";
   document.getElementById("tbody").innerHTML = list.length ? list.map(r=>`
     <tr onclick="open_('${r.code}')">${cols.map(([k])=>`<td>${cellHtml(r,k)}</td>`).join("")}</tr>`).join("")
-    : `<tr><td colspan="${cols.length}" class="empty">目前沒有符合此策略條件的標的</td></tr>`;
+    : `<tr><td colspan="${cols.length}" class="empty">目前沒有符合此策略條件的可轉債</td></tr>`;
   document.getElementById("cards").innerHTML = list.length ? list.map(r=>`
     <div class="card" onclick="open_('${r.code}')">
-      <div class="r1"><span class="nm">${esc(r.stk)}</span><span class="cd">${r.stkCode}</span>
+      <div class="r1"><span class="nm">${esc(r.name)}</span><span class="cd">${r.code}</span>
         ${heartChip(r.heart)}${r.pattern?` <span class="pat">${r.pattern}</span>`:""}
-        <span class="px">${fmt(r.stkPx,r.stkPx>500?0:2)}</span></div>
+        <span class="px">${fmt(r.cbPx,1)}</span></div>
       <div class="r2"><span>股債乖離 <b>${devCell(r)}</b></span>
-        <span>CB <b>${fmt(r.cbPx,1)}</b></span>
-        <span>未轉換 <b>${fmt(r.unconv,0)}%</b></span></div>
-    </div>`).join("") : `<div class="empty">目前沒有符合此策略條件的標的</div>`;
+        <span>現股 <b>${fmt(r.stkPx,r.stkPx>500?0:2)}</b></span>
+        <span>賣回報酬 <b>${putCell(r)}</b></span></div>
+    </div>`).join("") : `<div class="empty">目前沒有符合此策略條件的可轉債</div>`;
 }
 function pick(id){ cur = STRATS.find(s=>s.id===id); sortKey=null; render(); }
 function sortBy(k){
@@ -286,10 +326,10 @@ function sortBy(k){
 
 /* ── drawer ── */
 const drawer = document.getElementById("drawer"), scrim = document.getElementById("scrim");
-let curRow = null;
+let curRow = null, discount = 1.5;
 
 function open_(code){
-  curRow = ROWS.find(r=>r.code===code);
+  curRow = ROWS.find(r=>r.code===code); discount = 1.5;
   drawDrawer();
   drawer.classList.add("on"); scrim.classList.add("on");
 }
@@ -297,29 +337,36 @@ function closeD(){ drawer.classList.remove("on"); scrim.classList.remove("on"); 
 scrim.onclick = closeD;
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeD(); });
 
+/* CB 進場判讀：以「買CB」視角解讀 */
 function verdict(r){
   const a = Math.abs(r.dev);
-  if(a<=3)  return `股債乖離 <b>${fmt(r.dev)}%</b>，已進 <b>±3% 發動區</b>——短線上現股即將或正在發動，回到現股確認型態${r.pattern?`（目前符合「${r.pattern}」）`:""}與心動指標再決定介入。`;
-  if(a<=10) return `股債乖離 <b>${fmt(r.dev)}%</b>，在觀察帶內（≤10%），距發動區還有 ${fmt(a-3,1)} 個百分點——放進追蹤清單，等乖離收斂。`;
-  return `股債乖離 <b>${fmt(r.dev)}%</b>，超出觀察帶（>10%），股債連動弱，暫不列入「看CB玩現股」。`;
+  const sig = r.heart>=7?`現股大橘（+${r.heart}）`:r.heart>=4?`現股淺橘（+${r.heart}）`:null;
+  const pat = r.pattern?`「${r.pattern}」型態`:null;
+  const trigger = [sig,pat].filter(Boolean).join("＋") || "現股訊號中性";
+  const floor = (r.cbPx<=105 && r.putRet!=null && r.putRet>=0)
+    ? `價位貼債底（賣回報酬 +${fmt(r.putRet,1)}%），下檔有保護。` : "";
+  if(r.dev < -3) return `CB <b>折價 ${fmt(a)}%</b>——買 CB 比買現股便宜，跟漲之外還賺收斂價差。${trigger}。${floor}`;
+  if(a <= 3)    return `股債乖離 <b>${fmt(r.dev)}%</b>，CB 與現股幾乎 1:1 連動——${trigger}，此時買 CB 等於買現股＋債底保險；想放大就用下方 CBAS。${floor}`;
+  if(r.dev <= 10) return `CB <b>溢價 ${fmt(a)}%</b>，跟漲會先打折——${trigger}，可等乖離收斂再進，或改用 CBAS 降低占用資金。${floor}`;
+  return `CB 溢價 <b>${fmt(a)}%</b> 過高，與現股連動弱，操作 CB 不划算——除非看重債底收益，否則先觀望。${floor}`;
 }
 
 function drawDrawer(){
-  const r = curRow;
+  const r = curRow, c = cbas(r, discount);
   drawer.innerHTML = `
     <button class="close" onclick="closeD()" aria-label="關閉">×</button>
-    <h2>${esc(r.stk)} <span class="cd">${r.stkCode}</span></h2>
-    <p class="sub">可轉債：${esc(r.name)}（${r.code}）｜擔保：${esc(r.guar)}</p>
+    <h2>${esc(r.name)} <span class="cd">${r.code}</span></h2>
+    <p class="sub">現股：${esc(r.stk)}（${r.stkCode}）｜擔保：${esc(r.guar)}</p>
     <div class="bigpx">
-      <span><span class="v">${fmt(r.stkPx,r.stkPx>500?0:2)}</span> <span class="unit">現股</span></span>
-      <span><span class="v" style="font-size:22px">${fmt(r.cbPx,1)}</span> <span class="unit">CB</span></span>
+      <span><span class="v">${fmt(r.cbPx,1)}</span> <span class="unit">CB</span></span>
+      <span><span class="v" style="font-size:22px">${fmt(r.stkPx,r.stkPx>500?0:2)}</span> <span class="unit">現股</span></span>
       <span class="dev-pill ${cls(r.dev)}">乖離 ${r.dev>0?"+":""}${fmt(r.dev)}%</span>
       ${heartChip(r.heart)}
     </div>
-    <canvas id="spark" width="820" height="220" aria-label="近60日現股示意走勢"></canvas>
-    <div class="sec">發動判讀</div>
+    <canvas id="spark" width="820" height="220" aria-label="近60日CB價示意走勢"></canvas>
+    <div class="sec">CB 進場判讀</div>
     <div class="gaugebox">
-      <div class="gauge" id="gauge">
+      <div class="gauge">
         <span class="lbl" style="left:0%">-10%</span>
         <span class="lbl" style="left:50%">0</span>
         <span class="lbl" style="left:100%">+10%</span>
@@ -328,36 +375,47 @@ function drawDrawer(){
         <div class="marker" style="left:${Math.min(100,Math.max(0,(r.dev+10)/20*100))}%"></div>
       </div>
       <p class="verdict">${verdict(r)}</p>
-      <p class="note">金色帶 = ±3% 發動區；判讀依 SARA「看CB玩現股」邏輯，僅供參考。</p>
+      <p class="note">金色帶 = ±3% 高連動區（買 CB ≒ 買現股＋債底保險）；判讀僅供參考。</p>
     </div>
-    <div class="sec">股債連動</div>
+    <div class="sec">CBAS 槓桿試算</div>
+    <div class="calc">
+      ${c?`
+      <label>折現率 <input type="range" min="1" max="3" step="0.1" value="${discount}"
+        oninput="discount=+this.value; drawDrawer()"> <b style="min-width:38px;text-align:right">${discount.toFixed(1)}%</b></label>
+      <div class="row"><span>百元報價</span><span>${fmt(c.par100)}</span></div>
+      <div class="row"><span>所需權利金</span><b>${fmt(c.premium)}</b></div>
+      <div class="row"><span>槓桿倍數</span><span>${c.lev?fmt(c.lev,1)+" 倍":"－"}</span></div>
+      <p class="note">權利金 =（CB − 100）＋ 百元報價；百元報價 = 折現率 × 剩餘年 −（賣回價 − 100）＋ 手續費 0.3%。權利金越小、槓桿越大，越適合搭配高心動現股訊號。</p>
+      `:`<p class="note">此檔無賣回條款資料（永續／未設），暫不提供 CBAS 試算。</p>`}
+    </div>
+    <div class="sec">債底與條款</div>
     <dl class="grid">
       <div><dt>轉換價</dt><dd>${fmt(r.convPx,1)} 元</dd></div>
       <div><dt>轉換價值</dt><dd>${fmt(r.convVal)} 元</dd></div>
+      <div><dt>最近賣回</dt><dd>${r.putDate??"無（永續／未設）"}</dd></div>
+      <div><dt>賣回價 / 報酬率</dt><dd>${r.putPx?`${fmt(r.putPx)} / <span class="${cls(r.putRet)}">${fmt(r.putRet)}%</span>`:"－"}</dd></div>
       <div><dt>未轉換比率</dt><dd>${fmt(r.unconv,0)}%</dd></div>
       <div><dt>CB 成交張數</dt><dd>${r.vol||0}</dd></div>
-      <div><dt>最近賣回</dt><dd>${r.putDate??"無（永續／未設）"}</dd></div>
-      <div><dt>賣回價</dt><dd>${r.putPx?fmt(r.putPx):"－"}</dd></div>
     </dl>
-    <div class="sec">現股觀察（示意）</div>
+    <div class="sec">現股訊號（示意）</div>
     <dl class="grid">
       <div><dt>心動指標</dt><dd>${heartChip(r.heart)} ${r.heart>=7?"大橘，優先關注":r.heart>=4?"淺橘":r.heart>=0?"中性":"偏弱"}</dd></div>
       <div><dt>型態</dt><dd>${r.pattern?`<span class="pat">${r.pattern}</span>`:"未符合追蹤型態"}</dd></div>
       <div><dt>股價創新高</dt><dd>${r.newHigh?`${r.newHigh} 日高`:"－"}</dd></div>
-      <div><dt>CB 到期壓力</dt><dd>${r.putDate?`賣回日 ${r.putDate}`:"－"}</dd></div>
+      <div><dt>訊號用途</dt><dd class="stk">現股訊號到位 → 下單下在 CB／CBAS</dd></div>
     </dl>`;
   spark(r);
 }
 
-/* 走勢圖：以代號為種子的確定性隨機漫步，終點對齊現股價（示意） */
+/* 走勢圖：以代號為種子的確定性隨機漫步，終點對齊CB價（示意） */
 function spark(r){
   const cv = document.getElementById("spark"); if(!cv) return;
   const ctx = cv.getContext("2d"), W=cv.width, H=cv.height;
   let seed = [...r.code].reduce((a,c)=>a*31+c.charCodeAt(0),7)>>>0;
   const rnd = ()=> (seed = (seed*1103515245+12345)>>>0, seed/4294967296);
-  const n=60, pts=[]; let v=r.stkPx;
+  const n=60, pts=[]; let v=r.cbPx;
   for(let i=0;i<n;i++){ pts.unshift(v); v = v*(1+(rnd()-0.5)*0.03); }
-  pts[n-1]=r.stkPx;
+  pts[n-1]=r.cbPx;
   const mn=Math.min(...pts)*0.995, mx=Math.max(...pts)*1.005;
   const X=i=>i/(n-1)*(W-10)+5, Y=p=>H-8-(p-mn)/(mx-mn)*(H-20);
   ctx.clearRect(0,0,W,H);
@@ -371,7 +429,7 @@ function spark(r){
   ctx.beginPath(); ctx.moveTo(X(0),Y(pts[0]));
   pts.forEach((p,i)=>ctx.lineTo(X(i),Y(p)));
   ctx.strokeStyle="#D9A85C"; ctx.lineWidth=2; ctx.stroke();
-  ctx.beginPath(); ctx.arc(X(n-1),Y(r.stkPx),3.5,0,7); ctx.fillStyle="#F0EAF6"; ctx.fill();
+  ctx.beginPath(); ctx.arc(X(n-1),Y(r.cbPx),3.5,0,7); ctx.fillStyle="#F0EAF6"; ctx.fill();
 }
 
 render();
