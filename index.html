@@ -1,12 +1,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SARA 可轉債策略雷達 · 原型</title>
+<title>SARA 看CB玩現股 · 原型</title>
 <style>
   :root{
     --bg:#171221; --panel:#211A2E; --panel2:#2A2239; --line:#382E4C;
     --ink:#F0EAF6; --mute:#9C91B0; --faint:#6E6383;
     --gold:#D9A85C; --gold-soft:#3A2F22;
     --up:#F0655D; --down:#37B98C;
+    --h-hot:#E8643F; --h-warm:#E8A05C; --h-cool:#3FB9A8;
     --radius:10px;
   }
   *{box-sizing:border-box; margin:0; padding:0}
@@ -22,12 +23,12 @@
   header{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; padding:30px 0 6px}
   .brand{font-family:Georgia,"Times New Roman",serif; font-style:italic; font-weight:700;
     font-size:30px; letter-spacing:.06em; color:var(--gold)}
-  .brand small{font-style:normal; font-family:inherit}
   h1{font-size:19px; font-weight:600; letter-spacing:.02em}
   .databadge{margin-left:auto; font-size:12px; color:var(--mute);
     border:1px solid var(--line); border-radius:999px; padding:3px 12px; white-space:nowrap}
   .databadge b{color:var(--ink); font-weight:600}
   .tagline{color:var(--mute); font-size:13px; margin-bottom:18px}
+  .tagline b{color:var(--gold); font-weight:600}
 
   /* ── strategy chips ── */
   nav{display:flex; gap:8px; overflow-x:auto; padding:4px 0 12px; scrollbar-width:thin}
@@ -59,9 +60,16 @@
   .cd{color:var(--faint); font-size:12px; margin-left:6px}
   .stk{color:var(--mute); font-size:12px}
   .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--mute)}
-  .hi{display:inline-block; font-size:11px; padding:1px 8px; border-radius:999px;
+  .fire{display:inline-block; font-size:11px; padding:1px 8px; border-radius:999px;
     background:var(--gold-soft); color:var(--gold); font-weight:600}
-  .guar{font-size:12px; color:var(--mute)}
+  .pat{display:inline-block; font-size:11px; padding:1px 8px; border-radius:999px;
+    border:1px solid var(--line); color:var(--mute)}
+  .heart{display:inline-block; min-width:34px; text-align:center; font-size:12px; font-weight:700;
+    padding:2px 8px; border-radius:6px; color:#1B1424}
+  .h-hot{background:var(--h-hot); color:#FFF}
+  .h-warm{background:var(--h-warm)}
+  .h-mid{background:#E9E2F0}
+  .h-cool{background:var(--h-cool); color:#0E2B26}
   .empty{padding:40px; text-align:center; color:var(--mute)}
 
   /* ── cards (mobile) ── */
@@ -69,7 +77,7 @@
   .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
     padding:14px 16px; margin-bottom:10px; cursor:pointer}
   .card:active{background:var(--panel2)}
-  .card .r1{display:flex; align-items:baseline; gap:8px}
+  .card .r1{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
   .card .r1 .px{margin-left:auto; font-size:18px; font-weight:600; font-variant-numeric:tabular-nums}
   .card .r2{display:flex; gap:16px; margin-top:6px; font-size:12.5px; color:var(--mute);
     font-variant-numeric:tabular-nums; flex-wrap:wrap}
@@ -88,21 +96,27 @@
   .drawer h2{font-size:20px; font-weight:600}
   .drawer h2 .cd{font-size:13px}
   .drawer .sub{color:var(--mute); font-size:13px; margin:2px 0 14px}
-  .bigpx{display:flex; align-items:baseline; gap:14px; margin-bottom:14px}
+  .bigpx{display:flex; align-items:baseline; gap:14px; margin-bottom:14px; flex-wrap:wrap}
   .bigpx .v{font-size:30px; font-weight:600; font-variant-numeric:tabular-nums}
-  .prem-pill{font-size:13px; padding:2px 12px; border-radius:999px; font-weight:600}
-  .prem-pill.up{background:#3B2226}
-  .prem-pill.down{background:#1D3229}
-  canvas{width:100%; height:110px; display:block; margin-bottom:16px}
+  .bigpx .unit{color:var(--mute); font-size:12px}
+  .dev-pill{font-size:13px; padding:2px 12px; border-radius:999px; font-weight:600}
+  .dev-pill.up{background:#3B2226}
+  .dev-pill.down{background:#1D3229}
+  canvas{width:100%; display:block}
+  #spark{height:110px; margin-bottom:16px}
   .sec{font-size:12px; letter-spacing:.1em; color:var(--gold); font-weight:600; margin:18px 0 8px}
   .grid{display:grid; grid-template-columns:1fr 1fr; gap:8px 18px; font-size:13.5px; font-variant-numeric:tabular-nums}
   .grid dt{color:var(--mute); font-size:12px}
   .grid dd{font-weight:500}
-  .calc{background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-top:6px}
-  .calc .row{display:flex; justify-content:space-between; font-size:13.5px; padding:3px 0; font-variant-numeric:tabular-nums}
-  .calc .row b{font-weight:600; color:var(--gold)}
-  .calc label{display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--mute); margin-bottom:8px}
-  .calc input[type=range]{flex:1; accent-color:var(--gold)}
+  .gaugebox{background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-top:6px}
+  .gauge{position:relative; height:34px; margin:10px 0 4px}
+  .gauge .track{position:absolute; top:14px; left:0; right:0; height:6px; border-radius:3px; background:#372E4A}
+  .gauge .zone{position:absolute; top:14px; height:6px; background:var(--gold-soft);
+    border-left:1px solid var(--gold); border-right:1px solid var(--gold)}
+  .gauge .marker{position:absolute; top:6px; width:2px; height:22px; background:var(--ink); border-radius:1px}
+  .gauge .lbl{position:absolute; top:-6px; font-size:10px; color:var(--faint); transform:translateX(-50%)}
+  .gaugebox .verdict{font-size:13.5px; margin-top:6px}
+  .gaugebox .verdict b{color:var(--gold)}
   .note{font-size:11.5px; color:var(--faint); margin-top:8px}
 
   /* ── footer ── */
@@ -121,10 +135,10 @@
 <div class="wrap">
   <header>
     <span class="brand">SARA</span>
-    <h1>可轉債策略雷達</h1>
-    <span class="databadge">資料日 <b>2026/07/02–03</b> 盤後 · WEB 原型 v0.1</span>
+    <h1>看CB玩現股</h1>
+    <span class="databadge">資料日 <b>2026/07/02–03</b> 盤後 · WEB 原型 v0.2</span>
   </header>
-  <p class="tagline">一張可轉債總表，七種選債視角——點策略切換濾網，點任一檔看明細與 CBAS 試算。</p>
+  <p class="tagline"><b>CB 是訊號，現股才是主角</b>——股債乖離收斂進 ±3%，多半代表短線上現股即將或正在發動。點任一檔看發動判讀與現股型態。</p>
 
   <nav id="chips" role="tablist" aria-label="策略切換"></nav>
   <div class="stratdesc" id="stratdesc"></div>
@@ -138,92 +152,65 @@
   <div class="cards" id="cards"></div>
 
   <footer>
-    <b>原型資料說明</b>：行情、理論價、折溢價為 2026/07/02–03 真實盤後樣本（內部資料庫）；
-    賣回條款、集保比率、財務預估等欄位部分為示意值，僅供架構與互動過稿，勿作投資參考。<br>
-    <b>計算假設</b>：理論價 = 100 ÷ 轉換價 × 標的收盤價；折溢價 = (CB價 − 理論價) ÷ 理論價；
-    賣回報酬率 = (賣回價 − CB價) ÷ CB價；CBAS 權利金折現率預設 1.5%、手續費 0.3%（可於明細內調整）。<br>
-    策略命名為暫定，正式名稱與話術待 SARA 定稿。
+    <b>原型資料說明</b>：行情、轉換價、股債乖離為 2026/07/02–03 真實盤後樣本（內部資料庫）；
+    未轉換比率、心動指標、現股型態標籤為示意值，僅供架構與互動過稿，勿作投資參考。<br>
+    <b>計算定義</b>：轉換價值 = 100 ÷ 轉換價 × 股價；股債乖離率 = (CB價 − 轉換價值) ÷ 轉換價值；
+    心動指標為 −10～10 分級（&lt;0 藍綠、0–3 白、4–6 淺橘、7–10 橘紅，優先關注大橘）。<br>
+    策略門檻沿 SARA 現行設定：乖離 ≤10%、未轉換 ≥80%、CB ≥100，發動區 ±3%，皆可再調參。
   </footer>
 </div>
 
 <div class="scrim" id="scrim"></div>
-<aside class="drawer" id="drawer" aria-label="可轉債明細"></aside>
+<aside class="drawer" id="drawer" aria-label="個股明細"></aside>
 
 <script>
 /* ── 資料：真實盤後樣本 + 示意補欄 ── */
 const TODAY = new Date(2026, 6, 3);
 const ROWS = [
- // code,name,stkCode,stk,stkPx,convPx,cbPx,vol,newHigh,yield,growth,eps,pe,debt,putDate,putPx,cust,shortBal,guar
- ["140201","遠東新E1永","1402","遠東新",36.85,43.1,103.5,73,60,null,null,1.2,18,45,null,null,22,0,"無"],
- ["75562","意德士二","7556","意德士",293.5,177.3,164,4,20,1.57,null,6.8,32,38,"2027/09/14",101.0,41,0,"無"],
- ["75561","意德士一永","7556","意德士",293.5,180.8,165,0,20,1.57,null,6.8,32,38,null,null,55,0,"無"],
- ["66034","富強鑫四","6603","富強鑫",25.9,26.6,113,21,20,1.59,13.49,1.4,15,41,"2027/03/22",100.5,63,120,"無"],
- ["64775","安集五","6477","安集",35.95,44.3,94.4,4,20,1.04,null,2.1,14,35,"2027/11/02",100.0,47,210,"無"],
- ["64774","安集四","6477","安集",35.95,50.4,92.9,0,20,1.04,null,2.1,14,35,"2027/05/18",100.0,52,210,"無"],
- ["64773","安集三","6477","安集",35.95,41.9,101.6,0,20,1.04,null,2.1,14,35,"2026/12/07",100.0,58,210,"無"],
- ["61907","萬泰科七","6190","萬泰科",86.0,41.7,200,8,20,2.25,25.04,4.9,16,44,"2027/11/06",100.0,71,340,"無"],
- ["52121","凌網一","5212","凌網",48.45,57.7,97,0,20,8.85,null,3.6,12,30,"2027/06/30",100.5,49,0,"無"],
- ["45031","金雨一","4503","金雨",45.4,46.0,122,40,20,0,null,0.8,55,52,"2027/02/09",100.0,66,0,"有"],
- ["41295","聯合五","4129","聯合",95.5,105.6,112.1,2,20,4.74,17.18,5.2,18,28,"2028/04/25",101.0,74,150,"無"],
- ["41239","晟德九","4123","晟德",40.1,42.0,96.8,12,20,5.86,null,2.9,13,33,"2027/08/12",100.5,45,180,"無"],
- ["41238","晟德八","4123","晟德",40.1,43.0,94,114,20,5.86,null,2.9,13,33,"2026/11/20",100.5,39,180,"無"],
- ["11011","台泥一永","1101","台泥",23.1,35.2,100.2,6,0,3.1,null,1.1,19,48,null,null,35,0,"無"],
- ["68732","泓德能源二","6873","泓德能源",120.5,168.0,80.55,15,0,null,32.5,5.5,21,46,"2028/05/29",101.51,44,90,"無"],
- ["76101","聯友金屬一創","7610","聯友金屬-創",2495,795,269,3,120,null,41.2,28.5,60,36,"2027/05/20",100.0,81,0,"無"],
- ["54642","霖宏二","5464","霖宏",103,33.4,270,5,60,1.9,22.0,4.1,24,31,"2027/05/25",100.0,77,130,"有"],
- ["22363","百達三KY","2236","百達-KY",167.5,118.1,135.3,9,20,2.4,18.6,7.3,20,42,"2029/02/10",100.0,58,260,"無"],
- ["49231","力士一","4923","力士",61.5,34.66,170,7,60,1.2,35.8,3.2,17,39,"2027/01/29",100.0,69,410,"無"],
+ // code,name,stkCode,stk,stkPx,convPx,cbPx,vol,newHigh,putDate,putPx,guar,unconv,heart,pattern
+ ["140201","遠東新E1永","1402","遠東新",36.85,43.1,103.5,73,60,null,null,"無",92,1,null],
+ ["75562","意德士二","7556","意德士",293.5,177.3,164,4,20,"2027/09/14",101.0,"無",88,8,"N字勾"],
+ ["75561","意德士一永","7556","意德士",293.5,180.8,165,0,20,null,null,"無",95,6,null],
+ ["66034","富強鑫四","6603","富強鑫",25.9,26.6,113,21,20,"2027/03/22",100.5,"無",90,3,"小碎步"],
+ ["64775","安集五","6477","安集",35.95,44.3,94.4,4,20,"2027/11/02",100.0,"無",85,-2,null],
+ ["64774","安集四","6477","安集",35.95,50.4,92.9,0,20,"2027/05/18",100.0,"無",87,0,null],
+ ["64773","安集三","6477","安集",35.95,41.9,101.6,0,20,"2026/12/07",100.0,"無",91,2,null],
+ ["61907","萬泰科七","6190","萬泰科",86.0,41.7,200,8,20,"2027/11/06",100.0,"無",83,9,"N字勾"],
+ ["52121","凌網一","5212","凌網",48.45,57.7,97,0,20,"2027/06/30",100.5,"無",78,1,null],
+ ["45031","金雨一","4503","金雨",45.4,46.0,122,40,20,"2027/02/09",100.0,"有",94,4,"有底撐"],
+ ["41295","聯合五","4129","聯合",95.5,105.6,112.1,2,20,"2028/04/25",101.0,"無",89,2,null],
+ ["41239","晟德九","4123","晟德",40.1,42.0,96.8,12,20,"2027/08/12",100.5,"無",82,5,"小碎步"],
+ ["41238","晟德八","4123","晟德",40.1,43.0,94,114,20,"2026/11/20",100.5,"無",80,3,null],
+ ["11011","台泥一永","1101","台泥",23.1,35.2,100.2,6,0,null,null,"無",99,-1,null],
+ ["68732","泓德能源二","6873","泓德能源",120.5,168.0,80.55,15,0,"2028/05/29",101.51,"無",97,-4,null],
+ ["76101","聯友金屬一創","7610","聯友金屬-創",2495,795,269,3,120,"2027/05/20",100.0,"無",65,7,"穿心箭"],
+ ["54642","霖宏二","5464","霖宏",103,33.4,270,5,60,"2027/05/25",100.0,"有",72,6,null],
+ ["22363","百達三KY","2236","百達-KY",167.5,118.1,135.3,9,20,"2029/02/10",100.0,"無",86,7,"有底撐"],
+ ["49231","力士一","4923","力士",61.5,34.66,170,7,60,"2027/01/29",100.0,"無",84,5,null],
 ].map(r=>{
-  const [code,name,stkCode,stk,stkPx,convPx,cbPx,vol,newHigh,yld,growth,eps,pe,debt,putDate,putPx,cust,shortBal,guar]=r;
-  const theo = 100/convPx*stkPx;
-  const prem = (cbPx-theo)/theo*100;
-  let putRet=null, yrsToPut=null;
-  if(putDate&&putPx){
-    const d=new Date(putDate);
-    yrsToPut=Math.max(0,(d-TODAY)/31557600000);
-    putRet=(putPx-cbPx)/cbPx*100;
-  }
-  return {code,name,stkCode,stk,stkPx,convPx,cbPx,vol,newHigh,yld,growth,eps,pe,debt,putDate,putPx,cust,shortBal,guar,theo,prem,putRet,yrsToPut};
+  const [code,name,stkCode,stk,stkPx,convPx,cbPx,vol,newHigh,putDate,putPx,guar,unconv,heart,pattern]=r;
+  const convVal = 100/convPx*stkPx;                 // 轉換價值（理論價）
+  const dev = (cbPx-convVal)/convVal*100;           // 股債乖離率
+  return {code,name,stkCode,stk,stkPx,convPx,cbPx,vol,newHigh,putDate,putPx,guar,unconv,heart,pattern,convVal,dev};
 });
 
-/* CBAS：百元報價 = 折現率×剩餘年 −(賣回價−100)+手續費；權利金 = (CB−100)+百元報價 */
-function cbas(row, discount=1.5, fee=0.3){
-  if(row.yrsToPut==null) return null;
-  const par100 = discount*row.yrsToPut - (row.putPx-100) + fee;
-  const premium = (row.cbPx-100) + par100;
-  const lev = premium>0.5 ? row.theo/premium : null;
-  return {par100, premium, lev};
-}
-
-/* ── 策略定義：同一份資料，不同濾網 ── */
+/* ── SARA 策略：同一份資料，不同濾網 ── */
 const STRATS = [
- {id:"all", label:"全部總覽", col:"putRet", colName:"賣回報酬率",
+ {id:"cbstock", label:"看CB玩現股", cols:"sara",
+  desc:"<span class='cond'>股債乖離率 ≤10% ＋ 未轉換比率 ≥80% ＋ CB收盤 ≥100</span>——籌碼還在債裡、股債貼近，現股蓄勢。乖離進 ±3% 標「發動」。",
+  filter:r=>Math.abs(r.dev)<=10 && r.unconv>=80 && r.cbPx>=100,
+  sort:(a,b)=>Math.abs(a.dev)-Math.abs(b.dev)},
+ {id:"fire", label:"發動雷達", cols:"sara",
+  desc:"<span class='cond'>股債乖離率進入 ±3%</span>——股債轉換貼到正負3%，多半代表短線上現股即將或正在發動，優先看大橘。",
+  filter:r=>Math.abs(r.dev)<=3,
+  sort:(a,b)=>b.heart-a.heart},
+ {id:"pattern", label:"型態共振", cols:"sara",
+  desc:"<span class='cond'>現股符合 SARA 型態（N字勾／小碎步／有底撐／穿心箭）＋ 股債乖離 ≤10%</span>——CB 訊號與現股型態同時到位。",
+  filter:r=>r.pattern && Math.abs(r.dev)<=10,
+  sort:(a,b)=>b.heart-a.heart},
+ {id:"all", label:"全部總覽", cols:"full",
   desc:"可轉債完整清單，點欄位標題可排序。",
   filter:()=>true, sort:(a,b)=>a.code.localeCompare(b.code)},
- {id:"charge", label:"創高衝鋒", col:"growth", colName:"預估營收成長",
-  desc:"<span class='cond'>股價創 20／60／120 日新高 ＋ 折溢價＜40% ＋（殖利率＞6% 或 預估營收成長＞15%）</span>——股票噴出、可轉債還有槓桿空間。",
-  filter:r=>r.newHigh>0 && r.prem<40 && ((r.yld??0)>6 || (r.growth??0)>15),
-  sort:(a,b)=>b.newHigh-a.newHigh || a.prem-b.prem},
- {id:"putback", label:"賣回收益", col:"putRet", colName:"賣回報酬率",
-  desc:"<span class='cond'>賣回報酬率＞0 ＋ EPS＞0 ＋ 負債比＜50%</span>——抱到賣回日就有的保底報酬，報酬率＞4% 優先。",
-  filter:r=>r.putRet!=null && r.putRet>0 && r.eps>0 && r.debt<50,
-  sort:(a,b)=>b.putRet-a.putRet},
- {id:"arb", label:"折價套利", col:"shortBal", colName:"融券餘額",
-  desc:"<span class='cond'>折溢價＜0 ＋ 有成交 ＋ 融券可空</span>——買 CB、空現股鎖折價價差。",
-  filter:r=>r.prem<0 && r.vol>0,
-  sort:(a,b)=>a.prem-b.prem},
- {id:"cbas", label:"CBAS優勢", col:"cbasPrem", colName:"所需權利金",
-  desc:"<span class='cond'>所需權利金＜20 ＋ 槓桿＞20 倍 ＋ 折溢價貼近 0</span>——用小額權利金取代現股部位。",
-  filter:r=>{const c=cbas(r); return c && c.premium<20 && c.lev && c.lev>20},
-  sort:(a,b)=>cbas(a).premium-cbas(b).premium},
- {id:"lowpe", label:"低本益雷達", col:"pe", colName:"本益比",
-  desc:"<span class='cond'>CB＜110 ＋ 機構估EPS＞0 ＋ 本益比＜20 ＋（營收成長＞30% 或 殖利率＞6%）</span>——回本快、還得起錢的公司。",
-  filter:r=>r.cbPx<110 && r.vol>0 && r.eps>0 && r.pe<20 && ((r.growth??0)>30 || (r.yld??0)>6),
-  sort:(a,b)=>a.cbPx-b.cbPx},
- {id:"cust", label:"主力集保", col:"cust", colName:"集保佔發行比",
-  desc:"<span class='cond'>集保庫存佔發行張數＞50%</span>——籌碼集中在少數人手上的 CB，≥90% 特別標註。",
-  filter:r=>r.cust>50,
-  sort:(a,b)=>b.cust-a.cust},
 ];
 
 let cur = STRATS[0];
@@ -232,24 +219,36 @@ let sortKey = null, sortDir = -1;
 const fmt = (v,d=2)=> v==null||isNaN(v) ? "－" : Number(v).toFixed(d);
 const cls = v => v>0 ? "up" : v<0 ? "down" : "flat";
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const heartCls = h => h>=7?"h-hot":h>=4?"h-warm":h>=0?"h-mid":"h-cool";
+const heartChip = h => `<span class="heart ${heartCls(h)}">${h>0?"+":""}${h}</span>`;
+const devCell = r => `<span class="${cls(r.dev)}">${fmt(r.dev)}%</span>${Math.abs(r.dev)<=3?` <span class="fire">發動</span>`:""}`;
 
-function colVal(r){
-  if(cur.col==="cbasPrem"){const c=cbas(r); return c?c.premium:null}
-  return r[cur.col];
+const COLSETS = {
+  sara:[["name","現股 / CB"],["stkPx","股價"],["cbPx","CB收盤"],["convPx","轉換價"],["dev","股債乖離率"],["unconv","未轉換%"],["heart","心動"],["pattern","型態"]],
+  full:[["name","現股 / CB"],["stkPx","股價"],["cbPx","CB收盤"],["convPx","轉換價"],["convVal","轉換價值"],["dev","股債乖離率"],["vol","成交張"],["unconv","未轉換%"],["heart","心動"],["guar","擔保"]],
+};
+function cellHtml(r,k){
+  switch(k){
+    case "name": return `<span class="nm">${esc(r.stk)}</span><span class="cd">${r.stkCode}</span><br>
+      <span class="stk">${esc(r.name)} ${r.code}${r.pattern&&cur.cols==="full"?` <span class="pat">${r.pattern}</span>`:""}</span>`;
+    case "stkPx": return fmt(r.stkPx, r.stkPx>500?0:2);
+    case "cbPx": return fmt(r.cbPx,1);
+    case "convPx": return fmt(r.convPx,1);
+    case "convVal": return fmt(r.convVal);
+    case "dev": return devCell(r);
+    case "vol": return String(r.vol||0);
+    case "unconv": return fmt(r.unconv,0);
+    case "heart": return heartChip(r.heart);
+    case "pattern": return r.pattern?`<span class="pat">${r.pattern}</span>`:"－";
+    case "guar": return `<span class="stk">${r.guar==="有"?"有":"－"}</span>`;
+  }
 }
-function colText(r){
-  const v = colVal(r);
-  if(cur.col==="cust") return v!=null? fmt(v,0)+"%":"－";
-  if(cur.col==="shortBal") return v?fmt(v,0):"－";
-  if(cur.col==="putRet"||cur.col==="growth") return v!=null? `<span class="${cls(v)}">${fmt(v)}%</span>`:"－";
-  return fmt(v);
-}
-
 function rows(){
   let list = ROWS.filter(cur.filter);
   if(sortKey){
-    list = [...list].sort((a,b)=>{
-      const av = sortKey==="_col"?colVal(a):a[sortKey], bv = sortKey==="_col"?colVal(b):b[sortKey];
+    list=[...list].sort((a,b)=>{
+      const av=a[sortKey], bv=b[sortKey];
+      if(typeof av==="string"||typeof bv==="string") return sortDir*String(av??"").localeCompare(String(bv??""));
       return sortDir*(((av??-1e9))-((bv??-1e9)));
     });
   } else list.sort(cur.sort);
@@ -257,40 +256,26 @@ function rows(){
 }
 
 function render(){
-  // chips
   document.getElementById("chips").innerHTML = STRATS.map(s=>
     `<button class="chip${s===cur?" on":""}" role="tab" aria-selected="${s===cur}" onclick="pick('${s.id}')">${s.label}</button>`).join("");
   const list = rows();
   document.getElementById("stratdesc").innerHTML =
     `<b>${cur.label}</b> ｜ ${cur.desc} <span class="count">符合 ${list.length} 檔</span>`;
-  // table head
-  const cols = [["name","名稱"],["cbPx","CB收盤"],["stkPx","標的收盤"],["convPx","轉換價"],["theo","理論價"],["prem","折溢價%"],["vol","成交張"],["_col",cur.colName],["guar","擔保"]];
+  const cols = COLSETS[cur.cols];
   document.getElementById("thead").innerHTML = "<tr>"+cols.map(([k,t])=>
     `<th onclick="sortBy('${k}')">${t}${sortKey===k?`<span class="arr"> ${sortDir>0?"▲":"▼"}</span>`:""}</th>`).join("")+"</tr>";
-  // body
   document.getElementById("tbody").innerHTML = list.length ? list.map(r=>`
-    <tr onclick="open_('${r.code}')">
-      <td><span class="nm">${esc(r.name)}</span><span class="cd">${r.code}</span><br>
-          <span class="stk">${esc(r.stk)} ${r.stkCode}${r.newHigh?` <span class="hi">${r.newHigh}日高</span>`:""}</span></td>
-      <td>${fmt(r.cbPx,1)}</td>
-      <td>${fmt(r.stkPx,r.stkPx>500?0:2)}</td>
-      <td>${fmt(r.convPx,1)}</td>
-      <td>${fmt(r.theo)}</td>
-      <td class="${cls(r.prem)}">${fmt(r.prem)}</td>
-      <td>${r.vol||0}</td>
-      <td>${colText(r)}</td>
-      <td class="guar">${r.guar==="有"?"有":"－"}</td>
-    </tr>`).join("") : `<tr><td colspan="9" class="empty">目前沒有符合此策略條件的可轉債</td></tr>`;
-  // mobile cards
+    <tr onclick="open_('${r.code}')">${cols.map(([k])=>`<td>${cellHtml(r,k)}</td>`).join("")}</tr>`).join("")
+    : `<tr><td colspan="${cols.length}" class="empty">目前沒有符合此策略條件的標的</td></tr>`;
   document.getElementById("cards").innerHTML = list.length ? list.map(r=>`
     <div class="card" onclick="open_('${r.code}')">
-      <div class="r1"><span class="nm">${esc(r.name)}</span><span class="cd">${r.code}</span>
-        ${r.newHigh?`<span class="hi">${r.newHigh}日高</span>`:""}
-        <span class="px">${fmt(r.cbPx,1)}</span></div>
-      <div class="r2"><span>折溢價 <b class="${cls(r.prem)}">${fmt(r.prem)}%</b></span>
-        <span>理論價 <b>${fmt(r.theo)}</b></span>
-        <span>${cur.colName} <b>${colText(r)}</b></span></div>
-    </div>`).join("") : `<div class="empty">目前沒有符合此策略條件的可轉債</div>`;
+      <div class="r1"><span class="nm">${esc(r.stk)}</span><span class="cd">${r.stkCode}</span>
+        ${heartChip(r.heart)}${r.pattern?` <span class="pat">${r.pattern}</span>`:""}
+        <span class="px">${fmt(r.stkPx,r.stkPx>500?0:2)}</span></div>
+      <div class="r2"><span>股債乖離 <b>${devCell(r)}</b></span>
+        <span>CB <b>${fmt(r.cbPx,1)}</b></span>
+        <span>未轉換 <b>${fmt(r.unconv,0)}%</b></span></div>
+    </div>`).join("") : `<div class="empty">目前沒有符合此策略條件的標的</div>`;
 }
 function pick(id){ cur = STRATS.find(s=>s.id===id); sortKey=null; render(); }
 function sortBy(k){
@@ -301,10 +286,10 @@ function sortBy(k){
 
 /* ── drawer ── */
 const drawer = document.getElementById("drawer"), scrim = document.getElementById("scrim");
-let curRow = null, discount = 1.5;
+let curRow = null;
 
 function open_(code){
-  curRow = ROWS.find(r=>r.code===code); discount = 1.5;
+  curRow = ROWS.find(r=>r.code===code);
   drawDrawer();
   drawer.classList.add("on"); scrim.classList.add("on");
 }
@@ -312,56 +297,67 @@ function closeD(){ drawer.classList.remove("on"); scrim.classList.remove("on"); 
 scrim.onclick = closeD;
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeD(); });
 
+function verdict(r){
+  const a = Math.abs(r.dev);
+  if(a<=3)  return `股債乖離 <b>${fmt(r.dev)}%</b>，已進 <b>±3% 發動區</b>——短線上現股即將或正在發動，回到現股確認型態${r.pattern?`（目前符合「${r.pattern}」）`:""}與心動指標再決定介入。`;
+  if(a<=10) return `股債乖離 <b>${fmt(r.dev)}%</b>，在觀察帶內（≤10%），距發動區還有 ${fmt(a-3,1)} 個百分點——放進追蹤清單，等乖離收斂。`;
+  return `股債乖離 <b>${fmt(r.dev)}%</b>，超出觀察帶（>10%），股債連動弱，暫不列入「看CB玩現股」。`;
+}
+
 function drawDrawer(){
-  const r = curRow, c = cbas(r, discount);
+  const r = curRow;
   drawer.innerHTML = `
     <button class="close" onclick="closeD()" aria-label="關閉">×</button>
-    <h2>${esc(r.name)} <span class="cd">${r.code}</span></h2>
-    <p class="sub">標的：${esc(r.stk)}（${r.stkCode}）｜擔保：${esc(r.guar)}</p>
-    <div class="bigpx"><span class="v">${fmt(r.cbPx,1)}</span>
-      <span class="prem-pill ${cls(r.prem)}">折溢價 ${r.prem>0?"+":""}${fmt(r.prem)}%</span></div>
-    <canvas id="spark" width="820" height="220" aria-label="近60日CB價示意走勢"></canvas>
-    <div class="sec">評 價</div>
+    <h2>${esc(r.stk)} <span class="cd">${r.stkCode}</span></h2>
+    <p class="sub">可轉債：${esc(r.name)}（${r.code}）｜擔保：${esc(r.guar)}</p>
+    <div class="bigpx">
+      <span><span class="v">${fmt(r.stkPx,r.stkPx>500?0:2)}</span> <span class="unit">現股</span></span>
+      <span><span class="v" style="font-size:22px">${fmt(r.cbPx,1)}</span> <span class="unit">CB</span></span>
+      <span class="dev-pill ${cls(r.dev)}">乖離 ${r.dev>0?"+":""}${fmt(r.dev)}%</span>
+      ${heartChip(r.heart)}
+    </div>
+    <canvas id="spark" width="820" height="220" aria-label="近60日現股示意走勢"></canvas>
+    <div class="sec">發動判讀</div>
+    <div class="gaugebox">
+      <div class="gauge" id="gauge">
+        <span class="lbl" style="left:0%">-10%</span>
+        <span class="lbl" style="left:50%">0</span>
+        <span class="lbl" style="left:100%">+10%</span>
+        <div class="track"></div>
+        <div class="zone" style="left:35%; width:30%"></div>
+        <div class="marker" style="left:${Math.min(100,Math.max(0,(r.dev+10)/20*100))}%"></div>
+      </div>
+      <p class="verdict">${verdict(r)}</p>
+      <p class="note">金色帶 = ±3% 發動區；判讀依 SARA「看CB玩現股」邏輯，僅供參考。</p>
+    </div>
+    <div class="sec">股債連動</div>
     <dl class="grid">
       <div><dt>轉換價</dt><dd>${fmt(r.convPx,1)} 元</dd></div>
-      <div><dt>理論價</dt><dd>${fmt(r.theo)} 元</dd></div>
-      <div><dt>標的收盤</dt><dd>${fmt(r.stkPx,2)} 元</dd></div>
-      <div><dt>轉換比率</dt><dd>${fmt(100/r.convPx,3)}</dd></div>
+      <div><dt>轉換價值</dt><dd>${fmt(r.convVal)} 元</dd></div>
+      <div><dt>未轉換比率</dt><dd>${fmt(r.unconv,0)}%</dd></div>
+      <div><dt>CB 成交張數</dt><dd>${r.vol||0}</dd></div>
       <div><dt>最近賣回</dt><dd>${r.putDate??"無（永續／未設）"}</dd></div>
-      <div><dt>賣回價 / 報酬率</dt><dd>${r.putPx?`${fmt(r.putPx)} / <span class="${cls(r.putRet)}">${fmt(r.putRet)}%</span>`:"－"}</dd></div>
-      <div><dt>集保佔發行比</dt><dd>${fmt(r.cust,0)}%</dd></div>
-      <div><dt>融券餘額</dt><dd>${r.shortBal?fmt(r.shortBal,0)+" 張":"－"}</dd></div>
+      <div><dt>賣回價</dt><dd>${r.putPx?fmt(r.putPx):"－"}</dd></div>
     </dl>
-    <div class="sec">標的財務（示意）</div>
+    <div class="sec">現股觀察（示意）</div>
     <dl class="grid">
-      <div><dt>機構估 EPS</dt><dd>${fmt(r.eps,1)} 元</dd></div>
-      <div><dt>本益比</dt><dd>${fmt(r.pe,0)}</dd></div>
-      <div><dt>預估營收成長</dt><dd>${r.growth!=null?fmt(r.growth)+"%":"－"}</dd></div>
-      <div><dt>負債比率</dt><dd>${fmt(r.debt,0)}%</dd></div>
-    </dl>
-    <div class="sec">CBAS 試算</div>
-    <div class="calc">
-      ${c?`
-      <label>折現率 <input type="range" min="1" max="3" step="0.1" value="${discount}"
-        oninput="discount=+this.value; drawDrawer()"> <b style="min-width:38px;text-align:right">${discount.toFixed(1)}%</b></label>
-      <div class="row"><span>百元報價</span><span>${fmt(c.par100)}</span></div>
-      <div class="row"><span>所需權利金</span><b>${fmt(c.premium)}</b></div>
-      <div class="row"><span>槓桿倍數</span><span>${c.lev?fmt(c.lev,1)+" 倍":"－"}</span></div>
-      <p class="note">公式：百元報價 = 折現率 × 剩餘年 −（賣回價 − 100）＋ 手續費 0.3%；權利金 =（CB − 100）＋ 百元報價。</p>
-      `:`<p class="note">此檔無賣回條款資料，暫不提供 CBAS 試算。</p>`}
-    </div>`;
+      <div><dt>心動指標</dt><dd>${heartChip(r.heart)} ${r.heart>=7?"大橘，優先關注":r.heart>=4?"淺橘":r.heart>=0?"中性":"偏弱"}</dd></div>
+      <div><dt>型態</dt><dd>${r.pattern?`<span class="pat">${r.pattern}</span>`:"未符合追蹤型態"}</dd></div>
+      <div><dt>股價創新高</dt><dd>${r.newHigh?`${r.newHigh} 日高`:"－"}</dd></div>
+      <div><dt>CB 到期壓力</dt><dd>${r.putDate?`賣回日 ${r.putDate}`:"－"}</dd></div>
+    </dl>`;
   spark(r);
 }
 
-/* 走勢圖：以代號為種子的確定性隨機漫步，終點對齊現價（示意） */
+/* 走勢圖：以代號為種子的確定性隨機漫步，終點對齊現股價（示意） */
 function spark(r){
   const cv = document.getElementById("spark"); if(!cv) return;
   const ctx = cv.getContext("2d"), W=cv.width, H=cv.height;
   let seed = [...r.code].reduce((a,c)=>a*31+c.charCodeAt(0),7)>>>0;
   const rnd = ()=> (seed = (seed*1103515245+12345)>>>0, seed/4294967296);
-  const n=60, pts=[]; let v=r.cbPx;
+  const n=60, pts=[]; let v=r.stkPx;
   for(let i=0;i<n;i++){ pts.unshift(v); v = v*(1+(rnd()-0.5)*0.03); }
-  pts[n-1]=r.cbPx;
+  pts[n-1]=r.stkPx;
   const mn=Math.min(...pts)*0.995, mx=Math.max(...pts)*1.005;
   const X=i=>i/(n-1)*(W-10)+5, Y=p=>H-8-(p-mn)/(mx-mn)*(H-20);
   ctx.clearRect(0,0,W,H);
@@ -375,7 +371,7 @@ function spark(r){
   ctx.beginPath(); ctx.moveTo(X(0),Y(pts[0]));
   pts.forEach((p,i)=>ctx.lineTo(X(i),Y(p)));
   ctx.strokeStyle="#D9A85C"; ctx.lineWidth=2; ctx.stroke();
-  ctx.beginPath(); ctx.arc(X(n-1),Y(r.cbPx),3.5,0,7); ctx.fillStyle="#F0EAF6"; ctx.fill();
+  ctx.beginPath(); ctx.arc(X(n-1),Y(r.stkPx),3.5,0,7); ctx.fillStyle="#F0EAF6"; ctx.fill();
 }
 
 render();
