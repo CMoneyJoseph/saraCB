@@ -1,0 +1,162 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SARA CB策略雷達 · 策略邏輯與使用說明</title>
+<style>
+  :root{
+    --bg:#FAF6EE; --card:#FFFFFF; --panel:#F5EFE5; --line:#E7DCEA; --line-warm:#EDE3D2;
+    --ink:#2A1F4D; --purple:#5F4B8B; --lav:#A789C4; --mute:#7E6FA0; --faint:#A79BC0;
+    --gold:#F2C94C; --gold-deep:#D9A928; --gold-pale:#FFF6D8;
+    --up:#D64541; --down:#1E9E6E;
+    --h-hot:#E8643F; --h-warm:#F2A65C; --h-mid:#F1ECF7; --h-cool:#BFE5DE;
+    --radius:12px;
+    --shadow:0 2px 10px rgba(42,31,77,.07);
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI","Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
+    font-size:15px; line-height:1.75;}
+  ::selection{background:var(--gold); color:var(--ink)}
+  a{color:var(--purple)}
+  .wrap{max-width:860px; margin:0 auto; padding:0 20px 80px; position:relative}
+  .deco{position:absolute; top:-4px; right:-30px; width:140px; pointer-events:none; opacity:.85}
+
+  header{display:flex; align-items:center; gap:14px; padding:26px 0 8px; flex-wrap:wrap}
+  .avatar{width:52px; height:52px; border-radius:50%; object-fit:cover; object-position:top;
+    border:3px solid var(--gold); background:#EFE8F5}
+  .brand{font-family:Georgia,serif; font-weight:700; font-size:24px; letter-spacing:.12em}
+  h1{font-size:18px; font-weight:700; color:var(--purple)}
+  .backbtn{margin-left:auto; background:var(--gold); color:var(--ink); font-weight:700; font-size:13px;
+    padding:7px 16px; border-radius:999px; text-decoration:none; box-shadow:var(--shadow)}
+
+  h2{font-size:17px; font-weight:700; color:var(--ink); margin:34px 0 10px; padding-left:12px;
+    border-left:4px solid var(--gold)}
+  h3{font-size:14.5px; font-weight:700; color:var(--purple); margin:18px 0 6px}
+  p{margin:8px 0; color:#4A3E6B}
+  .lead{background:var(--card); border:1px solid var(--line); border-left:4px solid var(--gold);
+    border-radius:var(--radius); padding:14px 18px; box-shadow:var(--shadow); margin-top:14px}
+  .lead b{color:var(--purple)}
+  table{width:100%; border-collapse:collapse; background:var(--card); border-radius:var(--radius);
+    overflow:hidden; box-shadow:var(--shadow); font-size:13.5px; margin:10px 0}
+  th{background:#F3EDDF; color:var(--purple); font-weight:700; text-align:left; padding:9px 12px; font-size:12.5px}
+  td{padding:9px 12px; border-top:1px solid #F1EBF4; vertical-align:top; color:#4A3E6B}
+  td:first-child{font-weight:700; color:var(--ink); white-space:nowrap}
+  .tbox{overflow-x:auto}
+  ul,ol{margin:8px 0 8px 22px; color:#4A3E6B}
+  li{margin:4px 0}
+  code{background:var(--h-mid); color:var(--purple); border-radius:4px; padding:1px 6px; font-size:13px}
+  .fire{display:inline-block; font-size:11px; padding:1.5px 9px; border-radius:999px; background:var(--gold); color:var(--ink); font-weight:700}
+  .safe{display:inline-block; font-size:11px; padding:1.5px 9px; border-radius:999px; background:#DDF2EE; color:#1E7A66; font-weight:700}
+  .pat{display:inline-block; font-size:11px; padding:1.5px 9px; border-radius:999px; background:#F1ECF7; color:var(--purple); font-weight:600}
+  .heart{display:inline-block; min-width:36px; text-align:center; font-size:12px; font-weight:700; padding:2.5px 8px; border-radius:7px}
+  .h-hot{background:var(--h-hot); color:#FFF}
+  .h-warm{background:var(--h-warm); color:var(--ink)}
+  .h-mid{background:var(--h-mid); color:var(--purple)}
+  .h-cool{background:var(--h-cool); color:#155E50}
+  .warn{background:var(--gold-pale); border:1px solid var(--gold); border-radius:var(--radius);
+    padding:12px 16px; font-size:13px; color:#6B5A1E; margin:16px 0}
+  footer{margin-top:40px; font-size:12px; color:var(--faint); border-top:1px solid var(--line-warm); padding-top:14px}
+  @media (max-width:720px){ .deco{display:none} .backbtn{margin-left:0} }
+  @media print{ .backbtn,.deco{display:none} body{background:#FFF} }
+</style>
+
+<div class="wrap">
+  <img class="deco" src="https://sara.cmoney.tw/images/flower-tulip.png" alt="" onerror="this.remove()">
+  <header>
+    <img class="avatar" src="https://sara.cmoney.tw/images/sara-portrait-new.png" alt="SARA" onerror="this.remove()">
+    <div>
+      <div class="brand">SARA</div>
+      <h1>CB 策略雷達 · 策略邏輯與使用說明</h1>
+    </div>
+    <a class="backbtn" href="index.html">← 回到雷達</a>
+  </header>
+
+  <div class="lead">
+    <b>一句話講完這個網站：現股給訊號，CB 下單。</b><br>
+    現股的心動指標、型態、股債乖離只當「進場依據」；實際買賣的標的是<b>可轉債（CB）</b>，
+    想用小資金放大則用 <b>CBAS（可轉債資產交換選擇權）</b>。
+    買 CB 的好處：現股上漲時 CB 跟著漲（進攻），現股下跌時有債底與賣回條款撐著（防守）。
+  </div>
+
+  <h2>一、為什麼用 CB 取代現股？</h2>
+  <ul>
+    <li><b>上有跟漲</b>：當股債乖離收斂（CB 價格貼近轉換價值），現股漲 1%，CB 幾乎同步漲 1%。</li>
+    <li><b>下有債底</b>：CB 本質是公司債，只要公司不倒，到期／賣回日可以拿回本金（賣回價通常 ≥100）。買在 105 以下，下檔風險有限。</li>
+    <li><b>可加槓桿</b>：透過 CBAS 只付「權利金」就取得整張 CB 的上漲權利，資金效率可放大數倍到數十倍。</li>
+  </ul>
+
+  <h2>二、五個策略的邏輯</h2>
+  <div class="tbox">
+  <table>
+    <tr><th>策略</th><th>篩選條件</th><th>邏輯白話</th><th>預設排序</th></tr>
+    <tr><td>心動CB（主打）</td><td>現股心動 ≥4（淺橘以上）或型態到位＋股債乖離 ≤10%＋CB 有成交</td>
+      <td>現股有戲，但單改下在 CB——漲跟得上、跌有債底</td><td>心動指標高→低</td></tr>
+    <tr><td>發動雷達</td><td>股債乖離進 ±3%</td>
+      <td>CB 與現股幾乎 1:1 連動，買 CB ＝ 買現股＋債底保險</td><td>心動指標高→低</td></tr>
+    <tr><td>債底安全網</td><td>CB 收盤 ≤105＋賣回報酬率 ≥0</td>
+      <td>貼近債底，抱到賣回日穩拿保底報酬；現股發動就跟漲，進可攻退可守</td><td>賣回報酬率高→低</td></tr>
+    <tr><td>CBAS槓桿</td><td>CBAS 權利金 &lt;20＋槓桿 &gt;5 倍</td>
+      <td>小額權利金撬動整檔 CB，搭配高心動現股訊號放大效益</td><td>槓桿倍數高→低</td></tr>
+    <tr><td>全部總覽</td><td>無篩選</td><td>完整清單，自由排序</td><td>代號</td></tr>
+  </table>
+  </div>
+
+  <h2>三、關鍵指標與公式</h2>
+  <div class="tbox">
+  <table>
+    <tr><th>指標</th><th>公式／定義</th><th>怎麼看</th></tr>
+    <tr><td>轉換價值</td><td><code>100 ÷ 轉換價 × 股價</code></td><td>一張 CB 換成股票值多少錢</td></tr>
+    <tr><td>股債乖離率</td><td><code>(CB價 − 轉換價值) ÷ 轉換價值</code></td><td>正＝CB 比較貴（溢價）、負＝CB 比較便宜（折價）；<b>±3% 內＝高連動</b>，現股漲 CB 直接跟</td></tr>
+    <tr><td>賣回報酬率</td><td><code>(賣回價 − CB價) ÷ CB價</code></td><td>抱到賣回日的保底報酬；≥0 且 CB ≤105 標 <span class="safe">有底</span></td></tr>
+    <tr><td>CBAS 權利金</td><td><code>(CB − 100) ＋ 百元報價</code>；百元報價 = 折現率 × 剩餘年 −（賣回價 − 100）＋ 手續費 0.3%</td><td>買 CBAS 要付的錢；越小槓桿越大（明細內折現率可調）</td></tr>
+    <tr><td>心動指標</td><td>−10 ～ +10 分級</td><td><span class="heart h-hot">+9</span> 橘紅＝大橘優先、<span class="heart h-warm">+5</span> 淺橘、<span class="heart h-mid">+2</span> 白＝中性、<span class="heart h-cool">-4</span> 藍綠＝偏弱</td></tr>
+    <tr><td>型態</td><td>SARA 型態學</td><td><span class="pat">N字勾</span> <span class="pat">小碎步</span> <span class="pat">有底撐</span> <span class="pat">穿心箭</span>——現股出現追蹤型態時標註</td></tr>
+    <tr><td>未轉換比率</td><td>尚未轉換成股票的 CB 比例</td><td>越高代表籌碼還鎖在債裡，未來轉換動能越大</td></tr>
+  </table>
+  </div>
+
+  <h2>四、操作流程（給測試夥伴）</h2>
+  <ol>
+    <li><b>選策略</b>：點上方金色策略籤切換濾網；籤下方灰色說明列會顯示該策略的完整條件與符合檔數。</li>
+    <li><b>掃表格</b>：每列＝一檔 CB（粗體），下方小字是對應現股。徽章：<span class="fire">發動</span>＝乖離進 ±3%、<span class="safe">有底</span>＝債底保護、<span class="pat">型態</span>＝現股符合 SARA 型態。</li>
+    <li><b>排序</b>：點任何欄位標題可改排序，再點一次反向。</li>
+    <li><b>開明細</b>：點任一列，右側抽屜依序是——<b>CB 進場判讀</b>（乖離儀表＋白話結論）、<b>CBAS 槓桿試算</b>（拉折現率即時重算）、債底與條款、現股訊號。</li>
+    <li><b>手機</b>：直接開同一網址，會自動切成卡片版。</li>
+  </ol>
+
+  <h3>判讀文案的分級規則</h3>
+  <ul>
+    <li>乖離 &lt; −3%（折價）：買 CB 比買現股便宜，跟漲還賺收斂價差。</li>
+    <li>乖離 ±3% 內：高連動——買 CB ≒ 買現股＋債底保險。</li>
+    <li>乖離 +3%～+10%（溢價）：跟漲打折，等收斂或改用 CBAS。</li>
+    <li>乖離 &gt; +10%：連動弱，操作 CB 不划算，觀望。</li>
+  </ul>
+
+  <h2>五、資料說明與目前限制</h2>
+  <div class="tbox">
+  <table>
+    <tr><th>欄位</th><th>資料狀態</th></tr>
+    <tr><td>CB／現股收盤、轉換價、股債乖離、賣回日／賣回價</td><td>✅ 真實盤後樣本（2026/07/02–03，內部資料庫）</td></tr>
+    <tr><td>未轉換比率、心動指標、現股型態標籤</td><td>⚠️ 示意值——正式版將接真實資料源</td></tr>
+    <tr><td>CBAS 權利金</td><td>⚠️ 公式估算——正式版擬接券商實際報價</td></tr>
+    <tr><td>K 線走勢圖</td><td>⚠️ 示意曲線——正式版接真實日K</td></tr>
+  </table>
+  </div>
+
+  <div class="warn">
+    ⚠️ 本站為內部測試原型：標的清單非即時、部分欄位為示意值，所有判讀文案僅供產品討論，
+    <b>不構成投資建議，請勿依此下單</b>。
+  </div>
+
+  <h2>六、測試回饋想收集的問題</h2>
+  <ol>
+    <li>五個策略的<b>門檻數字</b>（乖離 ±3%／CB ≤105／權利金 &lt;20／槓桿 &gt;5 倍）合理嗎？想改成多少？</li>
+    <li>「CB 進場判讀」的白話文案，<b>看得懂嗎？敢照著理解操作嗎？</b></li>
+    <li>表格欄位有沒有<b>多餘的？缺少的？</b>（例如：想看融券、主力分點、剩餘年限？）</li>
+    <li>策略命名（心動CB／發動雷達／債底安全網／CBAS槓桿）<b>符合 SARA 的語感嗎？</b></li>
+    <li>你會希望這個網站<b>盤中更新</b>還是<b>盤後掃描</b>就夠？</li>
+  </ol>
+
+  <footer>
+    SARA CB 策略雷達 · 內部測試原型 v0.4 ｜ 回饋請交給 PM ｜ <a href="index.html">回到雷達 →</a>
+  </footer>
+</div>

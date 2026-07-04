@@ -3,147 +3,194 @@
 <title>SARA CB策略雷達 · 原型</title>
 <style>
   :root{
-    --bg:#171221; --panel:#211A2E; --panel2:#2A2239; --line:#382E4C;
-    --ink:#F0EAF6; --mute:#9C91B0; --faint:#6E6383;
-    --gold:#D9A85C; --gold-soft:#3A2F22;
-    --up:#F0655D; --down:#37B98C;
-    --h-hot:#E8643F; --h-warm:#E8A05C; --h-cool:#3FB9A8;
-    --radius:10px;
+    --bg:#FAF6EE; --card:#FFFFFF; --panel:#F5EFE5; --line:#E7DCEA; --line-warm:#EDE3D2;
+    --ink:#2A1F4D; --purple:#5F4B8B; --lav:#A789C4; --mute:#7E6FA0; --faint:#A79BC0;
+    --gold:#F2C94C; --gold-deep:#D9A928; --gold-pale:#FFF6D8;
+    --up:#D64541; --down:#1E9E6E;
+    --h-hot:#E8643F; --h-warm:#F2A65C; --h-mid:#F1ECF7; --h-cool:#BFE5DE;
+    --radius:12px;
+    --shadow:0 2px 10px rgba(42,31,77,.07);
   }
   *{box-sizing:border-box; margin:0; padding:0}
   html,body{background:var(--bg); color:var(--ink);
     font-family:"Segoe UI","Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
-    font-size:15px; line-height:1.55;}
-  ::selection{background:var(--gold); color:#171221}
+    font-size:15px; line-height:1.6;}
+  ::selection{background:var(--gold); color:var(--ink)}
   button{font:inherit; color:inherit; background:none; border:none; cursor:pointer}
+  a{color:var(--purple)}
 
-  .wrap{max-width:1180px; margin:0 auto; padding:0 20px 80px}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 20px 80px; position:relative}
+
+  /* ── 花卉裝飾 ── */
+  .deco{position:absolute; pointer-events:none; opacity:.85; z-index:0}
+  .deco.tr{top:-6px; right:-30px; width:150px}
+  .deco.bl{top:210px; left:-70px; width:110px; opacity:.5}
 
   /* ── header ── */
-  header{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; padding:30px 0 6px}
-  .brand{font-family:Georgia,"Times New Roman",serif; font-style:italic; font-weight:700;
-    font-size:30px; letter-spacing:.06em; color:var(--gold)}
-  h1{font-size:19px; font-weight:600; letter-spacing:.02em}
-  .databadge{margin-left:auto; font-size:12px; color:var(--mute);
-    border:1px solid var(--line); border-radius:999px; padding:3px 12px; white-space:nowrap}
-  .databadge b{color:var(--ink); font-weight:600}
-  .tagline{color:var(--mute); font-size:13px; margin-bottom:18px}
-  .tagline b{color:var(--gold); font-weight:600}
+  header{display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:26px 0 4px; position:relative; z-index:1}
+  .avatar{width:56px; height:56px; border-radius:50%; object-fit:cover; object-position:top;
+    border:3px solid var(--gold); background:#EFE8F5; box-shadow:var(--shadow)}
+  .brandcol .brand{font-family:Georgia,"Times New Roman",serif; font-weight:700;
+    font-size:26px; letter-spacing:.14em; color:var(--ink); line-height:1.1}
+  .brandcol .studio{font-size:10.5px; letter-spacing:.3em; color:var(--lav); font-weight:600}
+  h1{font-size:19px; font-weight:700; letter-spacing:.02em; color:var(--purple)}
+  .headbtns{margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  .guidebtn{background:var(--gold); color:var(--ink); font-weight:700; font-size:13.5px;
+    padding:8px 18px; border-radius:999px; box-shadow:var(--shadow); transition:transform .12s}
+  .guidebtn:hover{transform:translateY(-1px)}
+  .guidebtn:focus-visible{outline:2px solid var(--purple); outline-offset:2px}
+  .databadge{font-size:12px; color:var(--mute);
+    border:1px solid var(--line); background:var(--card); border-radius:999px; padding:4px 12px; white-space:nowrap}
+  .databadge b{color:var(--ink); font-weight:700}
+  .tagline{color:var(--mute); font-size:13.5px; margin:10px 0 18px; position:relative; z-index:1; max-width:720px}
+  .tagline b{color:var(--purple); font-weight:700}
 
   /* ── strategy chips ── */
-  nav{display:flex; gap:8px; overflow-x:auto; padding:4px 0 12px; scrollbar-width:thin}
-  .chip{flex:0 0 auto; padding:7px 16px; border-radius:999px; border:1px solid var(--line);
-    background:var(--panel); color:var(--mute); font-size:14px; transition:all .15s}
-  .chip:hover{border-color:var(--gold); color:var(--ink)}
-  .chip.on{background:var(--gold); border-color:var(--gold); color:#241A0D; font-weight:600}
-  .chip:focus-visible{outline:2px solid var(--gold); outline-offset:2px}
+  nav{display:flex; gap:8px; overflow-x:auto; padding:4px 0 12px; scrollbar-width:thin; position:relative; z-index:1}
+  .chip{flex:0 0 auto; padding:8px 18px; border-radius:999px; border:1.5px solid var(--line);
+    background:var(--card); color:var(--purple); font-size:14px; font-weight:600; transition:all .15s; box-shadow:var(--shadow)}
+  .chip:hover{border-color:var(--gold-deep); color:var(--ink)}
+  .chip.on{background:var(--gold); border-color:var(--gold); color:var(--ink); font-weight:700}
+  .chip:focus-visible{outline:2px solid var(--purple); outline-offset:2px}
 
-  .stratdesc{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
-    padding:12px 16px; margin-bottom:16px; font-size:13px; color:var(--mute)}
-  .stratdesc b{color:var(--gold); font-weight:600}
+  .stratdesc{background:var(--card); border:1px solid var(--line); border-left:4px solid var(--gold);
+    border-radius:var(--radius); padding:12px 16px; margin-bottom:16px; font-size:13.5px; color:var(--mute); box-shadow:var(--shadow)}
+  .stratdesc b{color:var(--purple); font-weight:700}
   .stratdesc .cond{color:var(--ink)}
   .count{color:var(--faint)}
 
   /* ── table (desktop) ── */
-  .tblbox{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); overflow-x:auto}
+  .tblbox{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow-x:auto; box-shadow:var(--shadow)}
   table{width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; min-width:900px}
-  th{font-size:12px; font-weight:600; color:var(--mute); text-align:right; padding:10px 12px;
-    border-bottom:1px solid var(--line); letter-spacing:.04em; white-space:nowrap; cursor:pointer; user-select:none}
+  th{font-size:12px; font-weight:700; color:var(--lav); text-align:right; padding:11px 12px;
+    border-bottom:2px solid var(--line); letter-spacing:.04em; white-space:nowrap; cursor:pointer; user-select:none; background:#FCFAF5}
   th:first-child{text-align:left}
-  th .arr{color:var(--gold)}
-  td{padding:9px 12px; text-align:right; border-bottom:1px solid #2A2239; font-size:14px; white-space:nowrap}
+  th .arr{color:var(--gold-deep)}
+  td{padding:10px 12px; text-align:right; border-bottom:1px solid #F1EBF4; font-size:14px; white-space:nowrap}
   td:first-child{text-align:left}
   tbody tr{cursor:pointer; transition:background .1s}
-  tbody tr:hover{background:var(--panel2)}
+  tbody tr:hover{background:var(--gold-pale)}
   tbody tr:last-child td{border-bottom:none}
-  .nm{font-weight:600}
+  .nm{font-weight:700}
   .cd{color:var(--faint); font-size:12px; margin-left:6px}
   .stk{color:var(--mute); font-size:12px}
   .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--mute)}
-  .fire{display:inline-block; font-size:11px; padding:1px 8px; border-radius:999px;
-    background:var(--gold-soft); color:var(--gold); font-weight:600}
-  .safe{display:inline-block; font-size:11px; padding:1px 8px; border-radius:999px;
-    background:#1D3229; color:var(--down); font-weight:600}
-  .pat{display:inline-block; font-size:11px; padding:1px 8px; border-radius:999px;
-    border:1px solid var(--line); color:var(--mute)}
-  .heart{display:inline-block; min-width:34px; text-align:center; font-size:12px; font-weight:700;
-    padding:2px 8px; border-radius:6px; color:#1B1424}
+  .fire{display:inline-block; font-size:11px; padding:1.5px 9px; border-radius:999px;
+    background:var(--gold); color:var(--ink); font-weight:700}
+  .safe{display:inline-block; font-size:11px; padding:1.5px 9px; border-radius:999px;
+    background:#DDF2EE; color:#1E7A66; font-weight:700}
+  .pat{display:inline-block; font-size:11px; padding:1.5px 9px; border-radius:999px;
+    background:#F1ECF7; color:var(--purple); font-weight:600}
+  .heart{display:inline-block; min-width:36px; text-align:center; font-size:12px; font-weight:700;
+    padding:2.5px 8px; border-radius:7px; color:var(--ink)}
   .h-hot{background:var(--h-hot); color:#FFF}
   .h-warm{background:var(--h-warm)}
-  .h-mid{background:#E9E2F0}
-  .h-cool{background:var(--h-cool); color:#0E2B26}
+  .h-mid{background:var(--h-mid); color:var(--purple)}
+  .h-cool{background:var(--h-cool); color:#155E50}
   .empty{padding:40px; text-align:center; color:var(--mute)}
 
   /* ── cards (mobile) ── */
   .cards{display:none}
-  .card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
-    padding:14px 16px; margin-bottom:10px; cursor:pointer}
-  .card:active{background:var(--panel2)}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px 16px; margin-bottom:10px; cursor:pointer; box-shadow:var(--shadow)}
+  .card:active{background:var(--gold-pale)}
   .card .r1{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
-  .card .r1 .px{margin-left:auto; font-size:18px; font-weight:600; font-variant-numeric:tabular-nums}
+  .card .r1 .px{margin-left:auto; font-size:18px; font-weight:700; font-variant-numeric:tabular-nums}
   .card .r2{display:flex; gap:16px; margin-top:6px; font-size:12.5px; color:var(--mute);
     font-variant-numeric:tabular-nums; flex-wrap:wrap}
-  .card .r2 b{font-weight:600}
+  .card .r2 b{font-weight:700}
 
   /* ── drawer ── */
-  .scrim{position:fixed; inset:0; background:rgba(12,8,20,.6); opacity:0; pointer-events:none; transition:opacity .2s; z-index:8}
+  .scrim{position:fixed; inset:0; background:rgba(42,31,77,.45); opacity:0; pointer-events:none; transition:opacity .2s; z-index:8}
   .scrim.on{opacity:1; pointer-events:auto}
-  .drawer{position:fixed; top:0; right:0; bottom:0; width:min(460px,100%); background:var(--panel);
+  .drawer{position:fixed; top:0; right:0; bottom:0; width:min(470px,100%); background:var(--card);
     border-left:1px solid var(--line); z-index:9; transform:translateX(102%);
     transition:transform .22s ease; overflow-y:auto; padding:24px}
   .drawer.on{transform:none}
-  @media (prefers-reduced-motion:reduce){ .drawer,.scrim{transition:none} }
+  @media (prefers-reduced-motion:reduce){ .drawer,.scrim,.modal{transition:none} }
   .drawer .close{position:absolute; top:14px; right:16px; font-size:22px; color:var(--mute); padding:4px 8px}
   .drawer .close:hover{color:var(--ink)}
-  .drawer h2{font-size:20px; font-weight:600}
+  .drawer h2{font-size:20px; font-weight:700}
   .drawer h2 .cd{font-size:13px}
   .drawer .sub{color:var(--mute); font-size:13px; margin:2px 0 14px}
   .bigpx{display:flex; align-items:baseline; gap:14px; margin-bottom:14px; flex-wrap:wrap}
-  .bigpx .v{font-size:30px; font-weight:600; font-variant-numeric:tabular-nums}
+  .bigpx .v{font-size:30px; font-weight:700; font-variant-numeric:tabular-nums}
   .bigpx .unit{color:var(--mute); font-size:12px}
-  .dev-pill{font-size:13px; padding:2px 12px; border-radius:999px; font-weight:600}
-  .dev-pill.up{background:#3B2226}
-  .dev-pill.down{background:#1D3229}
+  .dev-pill{font-size:13px; padding:2.5px 12px; border-radius:999px; font-weight:700}
+  .dev-pill.up{background:#FBE4E3}
+  .dev-pill.down{background:#DDF2EE}
+  .dev-pill.flat{background:var(--h-mid)}
   canvas{width:100%; display:block}
   #spark{height:110px; margin-bottom:16px}
-  .sec{font-size:12px; letter-spacing:.1em; color:var(--gold); font-weight:600; margin:18px 0 8px}
+  .sec{font-size:12px; letter-spacing:.12em; color:var(--gold-deep); font-weight:700; margin:18px 0 8px}
   .grid{display:grid; grid-template-columns:1fr 1fr; gap:8px 18px; font-size:13.5px; font-variant-numeric:tabular-nums}
   .grid dt{color:var(--mute); font-size:12px}
-  .grid dd{font-weight:500}
-  .gaugebox{background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-top:6px}
+  .grid dd{font-weight:600}
+  .gaugebox,.calc{background:var(--panel); border:1px solid var(--line-warm); border-radius:var(--radius); padding:14px 16px; margin-top:6px}
   .gauge{position:relative; height:34px; margin:10px 0 4px}
-  .gauge .track{position:absolute; top:14px; left:0; right:0; height:6px; border-radius:3px; background:#372E4A}
-  .gauge .zone{position:absolute; top:14px; height:6px; background:var(--gold-soft);
-    border-left:1px solid var(--gold); border-right:1px solid var(--gold)}
-  .gauge .marker{position:absolute; top:6px; width:2px; height:22px; background:var(--ink); border-radius:1px}
+  .gauge .track{position:absolute; top:14px; left:0; right:0; height:6px; border-radius:3px; background:#E3DAEA}
+  .gauge .zone{position:absolute; top:14px; height:6px; background:var(--gold-pale);
+    border-left:2px solid var(--gold-deep); border-right:2px solid var(--gold-deep)}
+  .gauge .marker{position:absolute; top:6px; width:3px; height:22px; background:var(--purple); border-radius:2px}
   .gauge .lbl{position:absolute; top:-6px; font-size:10px; color:var(--faint); transform:translateX(-50%)}
   .gaugebox .verdict{font-size:13.5px; margin-top:6px}
-  .gaugebox .verdict b{color:var(--gold)}
-  .calc{background:var(--panel2); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; margin-top:6px}
+  .gaugebox .verdict b{color:var(--purple)}
   .calc .row{display:flex; justify-content:space-between; font-size:13.5px; padding:3px 0; font-variant-numeric:tabular-nums}
-  .calc .row b{font-weight:600; color:var(--gold)}
+  .calc .row b{font-weight:700; color:var(--gold-deep)}
   .calc label{display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--mute); margin-bottom:8px}
-  .calc input[type=range]{flex:1; accent-color:var(--gold)}
+  .calc input[type=range]{flex:1; accent-color:var(--gold-deep)}
   .note{font-size:11.5px; color:var(--faint); margin-top:8px}
 
+  /* ── 操作說明 modal ── */
+  .modal{position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center;
+    background:rgba(42,31,77,.5); opacity:0; pointer-events:none; transition:opacity .2s; padding:20px}
+  .modal.on{opacity:1; pointer-events:auto}
+  .modalbox{background:var(--card); border-radius:16px; max-width:620px; width:100%; max-height:86vh; overflow-y:auto;
+    padding:28px 30px; position:relative; box-shadow:0 12px 40px rgba(42,31,77,.25)}
+  .modalbox .close{position:absolute; top:12px; right:14px; font-size:24px; color:var(--mute); padding:4px 8px}
+  .modalbox h3{font-size:19px; font-weight:700; color:var(--ink); margin-bottom:2px}
+  .modalbox .mhead{display:flex; gap:12px; align-items:center; margin-bottom:12px}
+  .modalbox .mhead img{width:46px; height:46px; border-radius:50%; object-fit:cover; object-position:top; border:2.5px solid var(--gold)}
+  .modalbox .msub{font-size:12.5px; color:var(--mute)}
+  .step{display:flex; gap:12px; margin:12px 0; font-size:13.5px}
+  .step .no{flex:0 0 26px; height:26px; border-radius:50%; background:var(--gold); color:var(--ink);
+    font-weight:700; font-size:13px; display:flex; align-items:center; justify-content:center}
+  .step b{color:var(--purple)}
+  .legend{background:var(--panel); border-radius:10px; padding:12px 14px; margin-top:12px; font-size:12.5px; color:var(--mute); line-height:2}
+  .legend b{color:var(--ink)}
+  .modalbox .cta{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap}
+  .modalbox .cta .guidebtn{font-size:14px}
+  .modalbox .cta a{font-size:13px; color:var(--purple); align-self:center}
+  .disc{font-size:11.5px; color:var(--faint); margin-top:12px}
+
   /* ── footer ── */
-  footer{margin-top:28px; font-size:12px; color:var(--faint); line-height:1.8}
+  footer{margin-top:28px; font-size:12px; color:var(--faint); line-height:1.9; position:relative; z-index:1}
   footer b{color:var(--mute)}
 
   @media (max-width:720px){
     .tblbox{display:none}
     .cards{display:block}
-    header{padding-top:20px}
-    .brand{font-size:24px}
-    .databadge{margin-left:0}
+    header{padding-top:18px}
+    .deco{display:none}
+    .headbtns{margin-left:0}
   }
 </style>
 
 <div class="wrap">
+  <img class="deco tr" src="https://sara.cmoney.tw/images/flower-purple.png" alt="" onerror="this.remove()">
+  <img class="deco bl" src="https://sara.cmoney.tw/images/flower-sakura.png" alt="" onerror="this.remove()">
+
   <header>
-    <span class="brand">SARA</span>
+    <img class="avatar" src="https://sara.cmoney.tw/images/sara-portrait-new.png" alt="SARA" onerror="this.remove()">
+    <div class="brandcol">
+      <div class="brand">SARA</div>
+      <div class="studio">STOCK&nbsp;STUDIO</div>
+    </div>
     <h1>CB 策略雷達</h1>
-    <span class="databadge">資料日 <b>2026/07/02–03</b> 盤後 · WEB 原型 v0.3</span>
+    <div class="headbtns">
+      <button class="guidebtn" onclick="openGuide()">操作說明</button>
+      <span class="databadge">資料日 <b>2026/07/02–03</b> 盤後 · 原型 v0.4</span>
+    </div>
   </header>
   <p class="tagline"><b>現股給訊號，CB 下單</b>——現股心動、型態到位時，改用可轉債進場：上有跟漲、下有債底；小資金想放大，用 CBAS 槓桿。點任一檔看 CB 進場判讀與 CBAS 試算。</p>
 
@@ -160,7 +207,8 @@
 
   <footer>
     <b>原型資料說明</b>：CB／現股行情、轉換價、股債乖離、賣回條件為 2026/07/02–03 真實盤後樣本（內部資料庫）；
-    未轉換比率、心動指標、現股型態標籤為示意值，僅供架構與互動過稿，勿作投資參考。<br>
+    未轉換比率、心動指標、現股型態標籤為示意值，僅供架構與互動過稿，勿作投資參考。
+    完整策略邏輯與使用說明請見 <a href="guide.html">說明文件</a>。<br>
     <b>計算定義</b>：轉換價值 = 100 ÷ 轉換價 × 股價；股債乖離率 = (CB價 − 轉換價值) ÷ 轉換價值；
     賣回報酬率 = (賣回價 − CB價) ÷ CB價；CBAS 權利金 =（CB − 100）＋ 百元報價（折現率預設 1.5%、手續費 0.3%，明細內可調）。<br>
     心動指標為 −10～10 分級（&lt;0 藍綠、0–3 白、4–6 淺橘、7–10 橘紅，優先關注大橘）；各策略門檻皆可再調參。
@@ -169,6 +217,37 @@
 
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-label="可轉債明細"></aside>
+
+<!-- 操作說明 -->
+<div class="modal" id="guidemodal" role="dialog" aria-label="操作說明">
+  <div class="modalbox">
+    <button class="close" onclick="closeGuide()" aria-label="關閉">×</button>
+    <div class="mhead">
+      <img src="https://sara.cmoney.tw/images/sara-portrait-new.png" alt="" onerror="this.remove()">
+      <div>
+        <h3>歡迎測試 SARA CB 策略雷達</h3>
+        <div class="msub">一分鐘看懂這個網站的邏輯與操作</div>
+      </div>
+    </div>
+    <div class="step"><span class="no">1</span><span><b>大前提：現股給訊號，CB 下單。</b>網站裡所有策略的出口都是「買 CB 或 CBAS」——現股的心動指標、型態只當進場依據，不是要你買股票。</span></div>
+    <div class="step"><span class="no">2</span><span><b>選一個策略。</b>上方金色籤是策略濾網：心動CB（現股有戲→買CB）、發動雷達（股債乖離進±3%，CB跟現股1:1連動）、債底安全網（跌有保底）、CBAS槓桿（小錢放大）、全部總覽。</span></div>
+    <div class="step"><span class="no">3</span><span><b>看表格徽章。</b>每檔 CB 一列，下方小字是它的現股。徽章含義見下方對照。</span></div>
+    <div class="step"><span class="no">4</span><span><b>點任一檔開明細。</b>右側抽屜會給「CB 進場判讀」白話結論（乖離儀表上金色帶＝±3% 高連動區）、CBAS 槓桿試算（折現率可拉）、債底條款與現股訊號。</span></div>
+    <div class="step"><span class="no">5</span><span><b>測試時想請你回饋：</b>策略門檻合不合理？判讀文案看不看得懂？還缺哪些欄位？</span></div>
+    <div class="legend">
+      <b>徽章對照</b>：
+      <span class="fire">發動</span> 股債乖離進 ±3%
+      <span class="safe">有底</span> 貼近債底且賣回報酬 ≥0
+      <span class="pat">N字勾</span> 現股符合 SARA 型態
+      <span class="heart h-hot">+9</span> 心動指標（橘紅=大橘優先、淺橘、白=中性、藍綠=偏弱）
+    </div>
+    <div class="cta">
+      <button class="guidebtn" onclick="closeGuide()">開始使用</button>
+      <a href="guide.html">完整策略邏輯與使用說明 →</a>
+    </div>
+    <p class="disc">原型資料部分為示意值，僅供內部測試討論，勿作投資參考。</p>
+  </div>
+</div>
 
 <script>
 /* ── 資料：真實盤後樣本 + 示意補欄 ── */
@@ -196,18 +275,17 @@ const ROWS = [
  ["49231","力士一","4923","力士",61.5,34.66,170,7,60,"2027/01/29",100.0,"無",84,5,null],
 ].map(r=>{
   const [code,name,stkCode,stk,stkPx,convPx,cbPx,vol,newHigh,putDate,putPx,guar,unconv,heart,pattern]=r;
-  const convVal = 100/convPx*stkPx;                 // 轉換價值
-  const dev = (cbPx-convVal)/convVal*100;           // 股債乖離率
+  const convVal = 100/convPx*stkPx;
+  const dev = (cbPx-convVal)/convVal*100;
   let putRet=null, yrsToPut=null;
   if(putDate&&putPx){
     const d=new Date(putDate);
     yrsToPut=Math.max(0,(d-TODAY)/31557600000);
-    putRet=(putPx-cbPx)/cbPx*100;                   // 賣回報酬率
+    putRet=(putPx-cbPx)/cbPx*100;
   }
   return {code,name,stkCode,stk,stkPx,convPx,cbPx,vol,newHigh,putDate,putPx,guar,unconv,heart,pattern,convVal,dev,putRet,yrsToPut};
 });
 
-/* CBAS：百元報價 = 折現率×剩餘年 −(賣回價−100)+手續費；權利金 = (CB−100)+百元報價 */
 function cbas(row, discount=1.5, fee=0.3){
   if(row.yrsToPut==null) return null;
   const par100 = discount*row.yrsToPut - (row.putPx-100) + fee;
@@ -216,7 +294,6 @@ function cbas(row, discount=1.5, fee=0.3){
   return {par100, premium, lev};
 }
 
-/* ── 策略：全部以「買CB / 操作CB」為出口 ── */
 const STRATS = [
  {id:"heartcb", label:"心動CB", cols:"sara",
   desc:"<span class='cond'>現股心動 ≥4（淺橘以上）或型態到位 ＋ 股債乖離 ≤10% ＋ CB 有成交</span>——現股有戲，但單改下在 CB：上有跟漲、下有債底。",
@@ -335,9 +412,8 @@ function open_(code){
 }
 function closeD(){ drawer.classList.remove("on"); scrim.classList.remove("on"); }
 scrim.onclick = closeD;
-document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeD(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeD(); closeGuide(); } });
 
-/* CB 進場判讀：以「買CB」視角解讀 */
 function verdict(r){
   const a = Math.abs(r.dev);
   const sig = r.heart>=7?`現股大橘（+${r.heart}）`:r.heart>=4?`現股淺橘（+${r.heart}）`:null;
@@ -419,18 +495,26 @@ function spark(r){
   const mn=Math.min(...pts)*0.995, mx=Math.max(...pts)*1.005;
   const X=i=>i/(n-1)*(W-10)+5, Y=p=>H-8-(p-mn)/(mx-mn)*(H-20);
   ctx.clearRect(0,0,W,H);
-  ctx.strokeStyle="#382E4C"; ctx.lineWidth=1;
+  ctx.strokeStyle="#E7DCEA"; ctx.lineWidth=1;
   [0.25,0.5,0.75].forEach(f=>{ctx.beginPath();ctx.moveTo(5,H*f);ctx.lineTo(W-5,H*f);ctx.stroke()});
   const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,"rgba(217,168,92,.25)"); g.addColorStop(1,"rgba(217,168,92,0)");
+  g.addColorStop(0,"rgba(95,75,139,.18)"); g.addColorStop(1,"rgba(95,75,139,0)");
   ctx.beginPath(); ctx.moveTo(X(0),Y(pts[0]));
   pts.forEach((p,i)=>ctx.lineTo(X(i),Y(p)));
   ctx.lineTo(X(n-1),H); ctx.lineTo(X(0),H); ctx.closePath(); ctx.fillStyle=g; ctx.fill();
   ctx.beginPath(); ctx.moveTo(X(0),Y(pts[0]));
   pts.forEach((p,i)=>ctx.lineTo(X(i),Y(p)));
-  ctx.strokeStyle="#D9A85C"; ctx.lineWidth=2; ctx.stroke();
-  ctx.beginPath(); ctx.arc(X(n-1),Y(r.cbPx),3.5,0,7); ctx.fillStyle="#F0EAF6"; ctx.fill();
+  ctx.strokeStyle="#5F4B8B"; ctx.lineWidth=2; ctx.stroke();
+  ctx.beginPath(); ctx.arc(X(n-1),Y(r.cbPx),4,0,7); ctx.fillStyle="#F2C94C"; ctx.fill();
+  ctx.strokeStyle="#2A1F4D"; ctx.lineWidth=1.5; ctx.stroke();
 }
+
+/* ── 操作說明 modal ── */
+const gm = document.getElementById("guidemodal");
+function openGuide(){ gm.classList.add("on"); }
+function closeGuide(){ gm.classList.remove("on"); try{localStorage.setItem("saraCB_guide_seen","1")}catch(e){} }
+gm.addEventListener("click", e=>{ if(e.target===gm) closeGuide(); });
+try{ if(!localStorage.getItem("saraCB_guide_seen")) openGuide(); }catch(e){}
 
 render();
 </script>
